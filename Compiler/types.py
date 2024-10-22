@@ -5078,7 +5078,7 @@ class unreduced_sfix(_single):
 
 class rsfix(sfix):
 
-    def __lt__(self) -> bool:
+    def __lt__(self, other) -> bool:
         print("custom less-than")
         return 0
 
