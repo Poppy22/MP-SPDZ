@@ -5078,9 +5078,88 @@ class unreduced_sfix(_single):
 
 class rsfix(sfix):
 
-    def __lt__(self, other) -> bool:
-        print("custom less-than")
-        return 0
+    def _RabbitLT(self, R, x, k):
+        """
+        res = R <? x (logarithmic rounds version)
+
+        R: clear integer register
+        x: array of secret bits
+        """
+        from Compiler.GC import sbit, cbits
+
+        print("!!! in _RabbitLT")
+        R_bits = cbits.bit_decompose_clear(R, 64)
+        y = [sbit() for i in range(k)]
+        z = [sbit() for i in range(k)]
+        w = [sbit() for i in range(k)]
+
+        for i in range(k):
+            y[i] = x[i].bit_xor(R_bits[i])
+            y[i] = ~y[i]
+
+        z[k-1] = y[k-1]
+        w[k-1] = ~y[k-1]
+
+        y = y[::-1]
+
+        def and_op(x, y, z=None):
+            return x & y
+        
+        z = floatingpoint.PreOpL(and_op, y)[::-1]
+
+        for i in range(k-1,0,-1): # no optimizing
+            w[i-1] = z[i-1] ^ z[i]
+
+        out = [sbit() for i in range(k)]
+        for i in range(k):
+            out[i] = R_bits[i] & w[i]
+
+        total = out[0]
+        for i in range(1, k):
+            total = total ^ out[i]
+
+        return total
+
+    def _RabbitLTC(self, s, a, c, BIT_SIZE = 64):
+        """
+        s = (a ?< c)
+
+        BIT_SIZE: bit length of a
+        """
+        print("!!! in _RabbitLTC")
+
+        from Compiler.GC import cbits
+        length_eda = BIT_SIZE
+
+        M = P_VALUES[64]
+        R = (M - 1) // 2
+
+        r, r_bits = sint.get_edabit(length_eda, True)
+        masked_a = (a + r).reveal()
+        masked_b = masked_a + M - R
+
+        w = [None, None, None, None]
+
+        w[1] = self._RabbitLT(masked_a, r_bits, BIT_SIZE)
+        w[2] = self._RabbitLT(masked_b, r_bits, BIT_SIZE)
+
+        w[3] = cint(masked_b > c)
+        w3_bits = cbits.bit_decompose_clear(w[3], 64)
+
+        movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
+
+
+    def rabbit(self, const_value):
+        print("!!! in rabbit")
+        res = sint()
+        self._RabbitLTC(res, self.k, const_value, program.bit_length)
+        return res
+
+
+    def __lt__(self, other):
+        print("!!! in __lt__, calling Rabbit...")
+        result = self.rabbit(other)
+        return result
 
 
 sfix.unreduced_type = unreduced_sfix
