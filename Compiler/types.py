@@ -5085,7 +5085,7 @@ class rsfix(sfix):
         R: clear integer register
         x: array of secret bits
         """
-        from Compiler.GC import sbit, cbits
+        from .GC.types import sbit, cbits
 
         print("!!! in _RabbitLT")
         R_bits = cbits.bit_decompose_clear(R, 64)
@@ -5128,7 +5128,7 @@ class rsfix(sfix):
         """
         print("!!! in _RabbitLTC")
 
-        from Compiler.GC import cbits
+        from .GC.types import cbits
         length_eda = BIT_SIZE
 
         M = P_VALUES[64]
