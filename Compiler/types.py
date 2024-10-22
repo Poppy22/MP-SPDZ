@@ -5075,6 +5075,14 @@ class unreduced_sfix(_single):
         assert self.m == other.m
         self.v.update(other.v)
 
+
+class rsfix(sfix):
+
+    def __lt__(self) -> bool:
+        print("custom less-than")
+        return 0
+
+
 sfix.unreduced_type = unreduced_sfix
 
 sfix.set_precision(16, 31)
