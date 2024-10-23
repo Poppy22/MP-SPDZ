@@ -5162,6 +5162,36 @@ class rsfix(sfix):
         return result
 
 
+    def __le__(self, other):
+        print("!!! in __le__, calling Rabbit...")
+        result = self.rabbit(other)
+        return result
+
+
+    def __gt__(self, other):
+        print("!!! in __gt__, calling Rabbit...")
+        result = 1 - self.__lt__(other)
+        return result
+    
+
+    def __ge__(self, other):
+        print("!!! in __ge__, calling Rabbit...")
+        result = 1 - self.__lt__(other)
+        return result
+    
+
+    def __eq__(self, other):
+        print("!!! in __eq__, calling Rabbit...")
+        result = self.rabbit(other)
+        return result
+    
+
+    def __ne__(self, other):
+        print("!!! in __ne__, calling Rabbit...")
+        result = self.rabbit(other)
+        return result
+
+
 sfix.unreduced_type = unreduced_sfix
 
 sfix.set_precision(16, 31)
