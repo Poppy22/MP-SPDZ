@@ -5154,20 +5154,52 @@ class custom_sfix(sfix):
 
 
     def rabbit(self, const_value):
-        print("!!! in rabbit, const=%s", const_value)
-        print("!!! in rabbit, const rev=%s", const_value.reveal())
-        print("!!! in rabbit, k=%s", self.k)
-        print("!!! in rabbit, k rev=%s", self.k.reveal())
+        try:
+            print("!!! in rabbit, const=%s", const_value)
+        except:
+            print("rabbit: print 1 failed")
+
+        try:
+            print("!!! in rabbit, const rev=%s", const_value.reveal())
+        except:
+            print("rabbit: print 2 failed")
+
+        try:
+            print("!!! in rabbit, k=%s", self.k)
+        except:
+            print("rabbit: print 3 failed")
+    
+        try:
+            print("!!! in rabbit, k rev=%s", self.k.reveal())
+        except:
+            print("rabbit: print 4 failed")
+
         res = sint()
         self._RabbitLTC(res, self.k, const_value, program.bit_length)
         return res
 
 
     def __lt__(self, other):
-        print("!!! in __lt__, const=%s", const_value)
-        print("!!! in __lt__, const rev=%s", const_value.reveal())
-        print("!!! in __lt__, k=%s", self.k)
-        print("!!! in __lt__, k rev=%s", self.k.reveal())
+        try:
+            print("!!! in __lt__, const=%s", other)
+        except:
+            print("__lt__: print 1 failed")
+
+        try:
+            print("!!! in __lt__, const rev=%s", other.reveal())
+        except:
+            print("__lt__: print 2 failed")
+
+        try:
+            print("!!! in __lt__, k=%s", self.k)
+        except:
+            print("__lt__: print 3 failed")
+    
+        try:
+            print("!!! in __lt__, k rev=%s", self.k.reveal())
+        except:
+            print("__lt__: print 4 failed")
+
         result = self.rabbit(other)
         return result
 
@@ -5179,10 +5211,26 @@ class custom_sfix(sfix):
 
 
     def __gt__(self, other):
-        print("!!! in __gt__, const=%s", const_value)
-        print("!!! in __gt__, const rev=%s", const_value.reveal())
-        print("!!! in __gt__, k=%s", self.k)
-        print("!!! in __gt__, k rev=%s", self.k.reveal())
+        try:
+            print("!!! in __gt__, const=%s", other)
+        except:
+            print("__gt__: print 1 failed")
+
+        try:
+            print("!!! in __gt__, const rev=%s", other.reveal())
+        except:
+            print("__gt__: print 2 failed")
+
+        try:
+            print("!!! in __gt__, k=%s", self.k)
+        except:
+            print("__gt__: print 3 failed")
+    
+        try:
+            print("!!! in __gt__, k rev=%s", self.k.reveal())
+        except:
+            print("__gt__: print 4 failed")
+
         result = 1 - self.__lt__(other)
         return result
     
