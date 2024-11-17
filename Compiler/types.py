@@ -5120,9 +5120,9 @@ class custom_sfix(sfix):
 
         return total
 
-    def _RabbitLTC(self, s, a, c, BIT_SIZE = 64):
+    def _RabbitGTC(self, s, a, c, BIT_SIZE = 64):
         """
-        s = (a ?< c)
+        s = (c ?< a)
 
         BIT_SIZE: bit length of a
         """
@@ -5195,31 +5195,11 @@ class custom_sfix(sfix):
             print("rabbit: print 4 failed")
 
         res = sint()
-        self._RabbitLTC(res, self.v - other.v, 0, program.bit_length)
+        self._RabbitGTC(res, self.v - other.v, 0, program.bit_length)
         return res
 
 
     def __lt__(self, other):
-        try:
-            print("!!! in __lt__, other=", other.v)
-        except:
-            print("__lt__: print 1 failed")
-
-        try:
-            print("!!! in __lt__, other rev=", other.v.reveal())
-        except:
-            print("__lt__: print 2 failed")
-
-        try:
-            print("!!! in __lt__, v=", self.v)
-        except:
-            print("__lt__: print 3 failed")
-    
-        try:
-            print("!!! in __lt__, v rev=", self.v.reveal())
-        except:
-            print("__lt__: print 4 failed")
-
         result = self.rabbit(other)
         return result
 
@@ -5251,7 +5231,7 @@ class custom_sfix(sfix):
         except:
             print("__lt__: print 4 failed")
 
-        result = 1 - self.__lt__(other)
+        result = self.rabbit(other)
         return result
     
 
