@@ -5167,8 +5167,7 @@ class custom_sfix(sfix):
         w[2] = self._RabbitLT(masked_b, r_bits, BIT_SIZE)
 
         print("!!! in _RabbitLTC. w1=%s, w2=%s", w[1].reveal(), w[2].reveal())
-        #w[3] = cint(masked_b > c)
-        w[3] = (masked_b > c)
+        w[3] = cint(masked_b > c)
         w3_bits = cbits.bit_decompose_clear(w[3], 64)
 
         movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
