@@ -5126,7 +5126,28 @@ class custom_sfix(sfix):
 
         BIT_SIZE: bit length of a
         """
-        print("!!! in _RabbitLTC. Comparing a=%s with c=%s", a, c)
+        try:
+            print("!!! in _RabbitLTC. Comparing a=%s", a)
+        except:
+            print("rabbit ltc: print 1 failed")
+        
+        try:
+            print("!!! in _RabbitLTC. Comparing a=%s", a.reveal())
+        except:
+            print("rabbit ltc: print 2 failed")
+
+
+        try:
+            print("!!! in _RabbitLTC. Comparing c=%s", c)
+        except:
+            print("rabbit ltc: print 3 failed")
+
+        
+        try:
+            print("!!! in _RabbitLTC. Comparing c=%s", c)
+        except:
+            print("rabbit ltc: print 4 failed")
+
 
         from .GC.types import cbits
         length_eda = BIT_SIZE
