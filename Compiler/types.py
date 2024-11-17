@@ -5076,7 +5076,7 @@ class unreduced_sfix(_single):
         self.v.update(other.v)
 
 
-class rsfix(sfix):
+class custom_sfix(sfix):
 
     def _RabbitLT(self, R, x, k):
         """
@@ -5126,7 +5126,7 @@ class rsfix(sfix):
 
         BIT_SIZE: bit length of a
         """
-        print("!!! in _RabbitLTC")
+        print("!!! in _RabbitLTC. Comparing a=%s with c=%s", a.reveal(), c)
 
         from .GC.types import cbits
         length_eda = BIT_SIZE
@@ -5138,12 +5138,16 @@ class rsfix(sfix):
         masked_a = (a + r).reveal()
         masked_b = masked_a + M - R
 
+        print("!!! in _RabbitLTC. M=%s, R=%s, masked_a=%s, masked_b=%s, c=%s", M, R, masked_a, masked_b, c)
+
         w = [None, None, None, None]
 
         w[1] = self._RabbitLT(masked_a, r_bits, BIT_SIZE)
         w[2] = self._RabbitLT(masked_b, r_bits, BIT_SIZE)
 
-        w[3] = cint(masked_b > c)
+        print("!!! in _RabbitLTC. w1=%s, w2=%s", w[1].reveal(), w[2].reveal())
+        #w[3] = cint(masked_b > c)
+        w[3] = (masked_b > c)
         w3_bits = cbits.bit_decompose_clear(w[3], 64)
 
         movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
