@@ -5126,7 +5126,7 @@ class custom_sfix(sfix):
 
         BIT_SIZE: bit length of a
         """
-        print("!!! in _RabbitLTC. Comparing a=%s with c=%s", a.reveal(), c)
+        print("!!! in _RabbitLTC. Comparing a=%s with c=%s", a, c)
 
         from .GC.types import cbits
         length_eda = BIT_SIZE
@@ -5154,14 +5154,20 @@ class custom_sfix(sfix):
 
 
     def rabbit(self, const_value):
-        print("!!! in rabbit")
+        print("!!! in rabbit, const=%s", const_value)
+        print("!!! in rabbit, const rev=%s", const_value.reveal())
+        print("!!! in rabbit, k=%s", self.k)
+        print("!!! in rabbit, k rev=%s", self.k.reveal())
         res = sint()
         self._RabbitLTC(res, self.k, const_value, program.bit_length)
         return res
 
 
     def __lt__(self, other):
-        print("!!! in __lt__, calling Rabbit...")
+        print("!!! in __lt__, const=%s", const_value)
+        print("!!! in __lt__, const rev=%s", const_value.reveal())
+        print("!!! in __lt__, k=%s", self.k)
+        print("!!! in __lt__, k rev=%s", self.k.reveal())
         result = self.rabbit(other)
         return result
 
@@ -5173,7 +5179,10 @@ class custom_sfix(sfix):
 
 
     def __gt__(self, other):
-        print("!!! in __gt__, calling Rabbit...")
+        print("!!! in __gt__, const=%s", const_value)
+        print("!!! in __gt__, const rev=%s", const_value.reveal())
+        print("!!! in __gt__, k=%s", self.k)
+        print("!!! in __gt__, k rev=%s", self.k.reveal())
         result = 1 - self.__lt__(other)
         return result
     
