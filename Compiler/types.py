@@ -5127,24 +5127,24 @@ class custom_sfix(sfix):
         BIT_SIZE: bit length of a
         """
         try:
-            print("!!! in _RabbitLTC. Comparing a=%s", a)
+            print("!!! in _RabbitLTC. Comparing a=", a)
         except:
             print("rabbit ltc: print 1 failed")
         
         try:
-            print("!!! in _RabbitLTC. Comparing a=%s", a.reveal())
+            print("!!! in _RabbitLTC. Comparing a=", a.reveal())
         except:
             print("rabbit ltc: print 2 failed")
 
 
         try:
-            print("!!! in _RabbitLTC. Comparing c=%s", c)
+            print("!!! in _RabbitLTC. Comparing c=", c)
         except:
             print("rabbit ltc: print 3 failed")
 
         
         try:
-            print("!!! in _RabbitLTC. Comparing c=%s", c)
+            print("!!! in _RabbitLTC. Comparing c=", c)
         except:
             print("rabbit ltc: print 4 failed")
 
@@ -5174,50 +5174,50 @@ class custom_sfix(sfix):
         movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
 
 
-    def rabbit(self, const_value):
+    def rabbit(self, other):
         try:
-            print("!!! in rabbit, const=%s", const_value)
+            print("!!! in rabbit, other=", other.v)
         except:
             print("rabbit: print 1 failed")
 
         try:
-            print("!!! in rabbit, const rev=%s", const_value.reveal())
+            print("!!! in rabbit, other rev=", other.v.reveal())
         except:
             print("rabbit: print 2 failed")
 
         try:
-            print("!!! in rabbit, k=%s", self.k)
+            print("!!! in rabbit, v=", self.v)
         except:
             print("rabbit: print 3 failed")
     
         try:
-            print("!!! in rabbit, k rev=%s", self.k.reveal())
+            print("!!! in rabbit, v rev=", self.v.reveal())
         except:
             print("rabbit: print 4 failed")
 
         res = sint()
-        self._RabbitLTC(res, self.k, const_value, program.bit_length)
+        self._RabbitLTC(res, self.v - other.v, 0, program.bit_length)
         return res
 
 
     def __lt__(self, other):
         try:
-            print("!!! in __lt__, const=%s", other)
+            print("!!! in __lt__, other=", other.v)
         except:
             print("__lt__: print 1 failed")
 
         try:
-            print("!!! in __lt__, const rev=%s", other.reveal())
+            print("!!! in __lt__, other rev=", other.v.reveal())
         except:
             print("__lt__: print 2 failed")
 
         try:
-            print("!!! in __lt__, k=%s", self.k)
+            print("!!! in __lt__, v=", self.v)
         except:
             print("__lt__: print 3 failed")
     
         try:
-            print("!!! in __lt__, k rev=%s", self.k.reveal())
+            print("!!! in __lt__, v rev=", self.v.reveal())
         except:
             print("__lt__: print 4 failed")
 
@@ -5233,24 +5233,24 @@ class custom_sfix(sfix):
 
     def __gt__(self, other):
         try:
-            print("!!! in __gt__, const=%s", other)
+            print("!!! in __gt__, other=%s", other.v)
         except:
             print("__gt__: print 1 failed")
 
         try:
-            print("!!! in __gt__, const rev=%s", other.reveal())
+            print("!!! in __gt__, other rev=%s", other.v.reveal())
         except:
             print("__gt__: print 2 failed")
-
+        
         try:
-            print("!!! in __gt__, k=%s", self.k)
+            print("!!! in __lt__, v=", self.v)
         except:
-            print("__gt__: print 3 failed")
+            print("__lt__: print 3 failed")
     
         try:
-            print("!!! in __gt__, k rev=%s", self.k.reveal())
+            print("!!! in __lt__, v rev=", self.v.reveal())
         except:
-            print("__gt__: print 4 failed")
+            print("__lt__: print 4 failed")
 
         result = 1 - self.__lt__(other)
         return result
