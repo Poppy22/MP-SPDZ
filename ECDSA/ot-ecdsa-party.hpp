@@ -8,6 +8,7 @@
 #include "Math/gfp.h"
 #include "ECDSA/P256Element.h"
 #include "Protocols/SemiShare.h"
+#include "Protocols/SPDZ.h"
 #include "Processor/BaseMachine.h"
 
 #include "ECDSA/preprocessing.hpp"
@@ -15,6 +16,7 @@
 #include "Protocols/Beaver.hpp"
 #include "Protocols/fake-stuff.hpp"
 #include "Protocols/MascotPrep.hpp"
+#include "Protocols/Hemi.hpp"
 #include "Processor/Processor.hpp"
 #include "Processor/Data_Files.hpp"
 #include "Processor/Input.hpp"

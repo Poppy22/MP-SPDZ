@@ -29,14 +29,13 @@ void SpdzWisePrep<T>::buffer_triples()
 }
 
 template<class T>
-template<int X, int L>
-void SpdzWisePrep<T>::buffer_bits(MaliciousRep3Share<gfp_<X, L>>)
+void SpdzWisePrep<T>::buffer_bits(false_type, true_type, false_type)
 {
     MaliciousRingPrep<T>::buffer_bits();
 }
 
-template<>
-void SpdzWisePrep<SpdzWiseShare<MaliciousRep3Share<gf2n>>>::buffer_bits()
+template<class T>
+void SpdzWisePrep<T>::buffer_bits(false_type, false_type, true_type)
 {
     typedef MaliciousRep3Share<gf2n> part_type;
     vector<typename part_type::Honest> bits;
@@ -84,19 +83,24 @@ void SpdzWiseRingPrep<T>::buffer_bits()
 template<class T>
 void SpdzWisePrep<T>::buffer_bits()
 {
-    buffer_bits(typename T::share_type());
+    buffer_bits(T::share_type::variable_players, T::clear::prime_field,
+            T::clear::characteristic_two);
 }
 
 template<class T>
-template<int X, int L>
-void SpdzWisePrep<T>::buffer_bits(MaliciousShamirShare<gfp_<X, L>>)
+void SpdzWisePrep<T>::buffer_bits(true_type, true_type, false_type)
 {
     buffer_bits_from_squares(*this);
 }
 
 template<class T>
-template<class U>
-void SpdzWisePrep<T>::buffer_bits(U)
+void SpdzWisePrep<T>::buffer_bits(false_type, false_type, false_type)
+{
+    super::buffer_bits();
+}
+
+template<class T>
+void SpdzWisePrep<T>::buffer_bits(true_type, false_type, true_type)
 {
     super::buffer_bits();
 }

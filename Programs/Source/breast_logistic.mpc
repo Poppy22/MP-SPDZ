@@ -22,16 +22,17 @@ elif 'vertical' in program.args:
     b = sfix.input_tensor_via(1, X_train[:,X_train.shape[1] // 2:])
     X_train = a.concat_columns(b)
     y_train = sint.input_tensor_via(0, y_train)
-elif 'party0' in program.args:
-    a = sfix.input_tensor_via(0, X_train[:,:X_train.shape[1] // 2])
-    b = sfix.input_tensor_via(1, shape=X_train[:,X_train.shape[1] // 2:].shape)
+elif 'party0' in program.args or 'party1' in program.args:
+    party = int('party1' in program.args)
+    a = sfix.input_tensor_via(
+        0, X_train[:,:X_train.shape[1] // 2] if party == 0 else None,
+        shape=X_train[:,:X_train.shape[1] // 2].shape)
+    b = sfix.input_tensor_via(
+        1, X_train[:,X_train.shape[1] // 2:] if party == 1 else None,
+        shape=X_train[:,X_train.shape[1] // 2:].shape)
     X_train = a.concat_columns(b)
-    y_train = sint.input_tensor_via(0, y_train)
-elif 'party1' in program.args:
-    a = sfix.input_tensor_via(0, shape=X_train[:,:X_train.shape[1] // 2].shape)
-    b = sfix.input_tensor_via(1, X_train[:,X_train.shape[1] // 2:])
-    X_train = a.concat_columns(b)
-    y_train = sint.input_tensor_via(0, shape=y_train.shape)
+    y_train = sint.input_tensor_via(0, y_train if party == 0 else None,
+                                    shape=y_train.shape)
 else:
     X_train = sfix.input_tensor_via(0, X_train)
     y_train = sint.input_tensor_via(0, y_train)

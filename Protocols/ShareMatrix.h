@@ -200,17 +200,27 @@ public:
 
     This operator*(const This& other) const
     {
-        assert(n_cols == other.n_rows);
-        This res(n_rows, other.n_cols);
-        if (entries.v.empty() or other.entries.v.empty())
-            return res;
-        res.entries.init();
-        for (int i = 0; i < n_rows; i++)
-            for (int j = 0; j < other.n_cols; j++)
-                for (int k = 0; k < n_cols; k++)
-                    res[{i, j}] += (*this)[{i, k}] * other[{k, j}];
-        res.check();
+        This res;
+        res.mul(*this, other);
         return res;
+    }
+
+    template<class U, class V>
+    void mul(const ValueMatrix<U>& a, const ValueMatrix<V>& b)
+    {
+        assert(a.n_cols == b.n_rows);
+        auto& res = *this;
+        res = {a.n_rows, b.n_cols};
+        if (a.entries.v.empty() or b.entries.v.empty())
+            return;
+        res.entries.init();
+        for (int i = 0; i < a.n_rows; i++)
+        {
+            for (int j = 0; j < b.n_cols; j++)
+                for (int k = 0; k < a.n_cols; k++)
+                    res[{i, j}] += a[{i, k}] * b[{k, j}];
+        }
+        res.check();
     }
 
     bool operator!=(const This& other) const
@@ -234,6 +244,13 @@ public:
         return res;
     }
 
+    void input(istream& is)
+    {
+        entries.init();
+        for (auto& x: entries)
+            x.input(is, false);
+    }
+
     friend ostream& operator<<(ostream& o, const This&)
     {
         return o;
@@ -253,7 +270,7 @@ public:
     typedef DummyLivePrep<T> LivePrep;
 
     typedef ValueMatrix<typename T::clear> clear;
-    typedef clear open_type;
+    typedef ValueMatrix<typename T::open_type> open_type;
     typedef typename T::mac_key_type mac_key_type;
 
     static string type_string()
@@ -323,39 +340,38 @@ public:
 };
 
 template<class T>
-ShareMatrix<T> operator*(const ValueMatrix<typename T::clear>& a,
+ShareMatrix<T> operator*(const typename ShareMatrix<T>::open_type& a,
         const ShareMatrix<T>& b)
 {
-    assert(a.n_cols == b.n_rows);
-    ShareMatrix<T> res(a.n_rows, b.n_cols);
-    if (a.entries.v.empty() or b.entries.v.empty())
-        return res;
-    res.entries.init();
-    for (int i = 0; i < a.n_rows; i++)
-        for (int j = 0; j < b.n_cols; j++)
-            for (int k = 0; k < a.n_cols; k++)
-                res[{i, j}] += a[{i, k}] * b[{k, j}];
-    res.check();
+    ShareMatrix<T> res;
+    res.mul(a, b);
+    return res;
+}
+
+template<class T>
+ShareMatrix<T> operator*(const ShareMatrix<T>& b,
+        const ValueMatrix<typename T::clear>& a)
+{
+    ShareMatrix<T> res;
+    res.mul(b, a);
     return res;
 }
 
 template<class T>
 class MatrixMC : public MAC_Check_Base<ShareMatrix<T>>
 {
+    friend class Hemi<T>;
+
     typename T::MAC_Check& inner;
 
 public:
-    MatrixMC() :
-            inner(
-                    *(OnlineOptions::singleton.direct ?
-                            new typename T::Direct_MC :
-                            new typename T::MAC_Check))
+    MatrixMC(typename T::MAC_Check& inner) :
+            MAC_Check_Base<ShareMatrix<T>>(inner.get_alphai()), inner(inner)
     {
     }
 
     ~MatrixMC()
     {
-        delete &inner;
     }
 
     void exchange(const Player& P)

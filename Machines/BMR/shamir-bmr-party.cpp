@@ -4,7 +4,7 @@
  */
 
 #include "BMR/RealProgramParty.hpp"
-#include "Machines/ShamirMachine.hpp"
+#include "Machines/Shamir.hpp"
 #include "Math/Z2k.hpp"
 
 int main(int argc, const char** argv)

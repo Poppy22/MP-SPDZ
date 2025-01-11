@@ -562,22 +562,17 @@ template <class T,class FD,class S>
 void Plaintext<T,FD,S>::pack(octetStream& o) const
 {
   to_poly();
-  o.store((unsigned int)b.size());
-  for (unsigned int i = 0; i < b.size(); i++)
-    o.store(b[i]);
+  o.store(b);
 }
 
 template <class T,class FD,class S>
 void Plaintext<T,FD,S>::unpack(octetStream& o)
 {
-  type = Polynomial;
-  unsigned int size;
-  o.get(size);
-  allocate();
+  o.get(b);
+  auto size = b.size();
+  allocate(Polynomial);
   if (size != b.size() and size != 0)
     throw length_error("unexpected length received");
-  for (unsigned int i = 0; i < size; i++)
-    b[i] = o.get<S>();
 }
 
 

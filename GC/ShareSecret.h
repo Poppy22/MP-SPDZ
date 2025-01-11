@@ -125,6 +125,8 @@ public:
 
     typedef NoShare bit_type;
 
+    typedef void DefaultMC;
+
     static const int N_BITS = clear::N_BITS;
 
     static const bool dishonest_majority = false;
@@ -166,6 +168,11 @@ public:
         return T::fake_opts();
     }
 
+    static size_t maximum_size()
+    {
+        return default_length;
+    }
+
     RepSecretBase()
     {
     }
@@ -203,7 +210,7 @@ public:
     typedef ReplicatedBase Protocol;
 
     static ReplicatedSecret constant(const typename super::clear& value,
-        int my_num, typename super::mac_key_type, int = -1)
+        int my_num, typename super::mac_key_type = {}, int = -1)
     {
       ReplicatedSecret res;
       if (my_num < 2)

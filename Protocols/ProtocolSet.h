@@ -7,8 +7,12 @@
 #define PROTOCOLS_PROTOCOLSET_H_
 
 #include "Processor/Processor.h"
+#include "Processor/Machine.h"
 #include "GC/ShareThread.h"
 #include "ProtocolSetup.h"
+
+#include <assert.h>
+#include <type_traits>
 
 /**
  * Input, multiplication, and output protocol instance
@@ -39,6 +43,16 @@ public:
      */
     ProtocolSet(Player& P, const ProtocolSetup<T>& setup) :
             ProtocolSet(P, setup.get_mac_key())
+    {
+    }
+
+    /**
+     * @param P communication instance
+     * @param machine virtual machine instance
+     */
+    template<class sgf2n>
+    ProtocolSet(Player& P, const Machine<T, sgf2n>& machine) :
+            ProtocolSet(P, machine.get_sint_mac_key())
     {
     }
 
@@ -80,6 +94,19 @@ public:
     }
 
     /**
+     * @param P communication instance
+     * @param machine virtual machine instance
+     */
+    template<class sint, class sgf2n>
+    BinaryProtocolSet(Player& P, const Machine<sint, sgf2n>& machine) :
+            usage(P.num_players()), prep(usage), thread(prep, P,
+                    machine.get_bit_mac_key()), output(*thread.MC), protocol(
+                    *thread.protocol), input(output, prep, P)
+    {
+        assert((is_same<typename sint::bit_type, T>()));
+    }
+
+    /**
      * Run all protocol checks
      */
     void check()
@@ -112,6 +139,18 @@ public:
      */
     MixedProtocolSet(Player& P, const MixedProtocolSetup<T>& setup) :
             arithmetic(P, setup), binary(P, setup.binary), output(
+                    arithmetic.output), preprocessing(arithmetic.preprocessing), protocol(
+                    arithmetic.protocol), input(arithmetic.input)
+    {
+    }
+
+    /**
+     * @param P communication instance
+     * @param machine virtual machine instance
+     */
+    template<class sgf2n>
+    MixedProtocolSet(Player& P, const Machine<T, sgf2n>& machine) :
+            arithmetic(P, machine), binary(P, machine), output(
                     arithmetic.output), preprocessing(arithmetic.preprocessing), protocol(
                     arithmetic.protocol), input(arithmetic.input)
     {

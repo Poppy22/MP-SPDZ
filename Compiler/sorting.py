@@ -11,7 +11,7 @@ def dest_comp(B):
     return sum(Tt) - 1
 
 def reveal_sort(k, D, reverse=False):
-    """ Sort in place according to "perfect" key. The name hints at the fact
+    r""" Sort in place according to "perfect" key. The name hints at the fact
     that a random order of the keys is revealed.
 
     :param k: vector or Array of sint containing exactly :math:`0,\dots,n-1`

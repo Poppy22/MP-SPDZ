@@ -250,6 +250,19 @@ to `Catrina and de Hoogh
 See also the paragraph on unknown prime moduli in :ref:`nonlinear`.
 
 
+Prime number not compatible with encryption scheme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MP-SPDZ only supports homomorphic encryption based on the
+number-theoretic transform, without it operations would expected to be
+considerably. The requirement is that the prime number equals one
+modulo a certain power of two. The exact power of two varies due to a
+number of parameters, but for the standard choice it's usually
+:math:`2^{14}` or :math:`2^{15}`. See `Gentry et
+al. <https://eprint.iacr.org/2012/099>`_ for more details on the
+underlying mathematics.
+
+
 Windows/VirtualBox performance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -282,3 +295,59 @@ This is a catch-all failure in protocols with malicious protocols that
 can be caused by something being wrong at any level. Please file a bug
 report with the specifics of your case.
 
+
+Debugging errors in a virtual machine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike Python or Java, C++ gives limited information when something
+goes wrong. On Linux, the `GNU Debugger (GDB)
+<https://en.wikipedia.org/wiki/GNU_Debugger>`_ aims to mitigate this
+by providing more introspection into where exactly something went
+wrong. MP-SPDZ comes with a few scripts that facilitate its
+use. First, you need to make sure gdb and `screen
+<https://en.wikipedia.org/wiki/GNU_Screen>`_ are installed. On Ubuntu,
+you can run the following::
+
+  sudo apt-get install gdb screen
+
+You can then run the following script call::
+
+  prefix=gdb_screen Scripts/<protocol>.sh ... -o throw_exceptions
+
+This runs every party in the background using the screen utility. You
+can get a party to the foreground using::
+
+  screen -r :<partyno>
+
+This will show the relevant running inside GDB. You can use the
+sequence "Ctrl-a d" to return to your usual terminal.
+
+If running the different parties separately, you can also use::
+
+  . Scripts/run-common.sh
+  gdb_front ./<protocol>-party.x ... -o throw_exceptions
+
+If the virtual machine aborts due to an error, GDB will indicate where
+in the code this happened. For example, deactivating all range checks
+on memory accesses and then running an illegal memory access triggers
+a segfault and the following output::
+
+  Thread 13 "shamir-party.x" received signal SIGSEGV, Segmentation fault.
+  [Switching to Thread 0x7fffdffff640 (LWP 246396)]
+  0x0000000000434c57 in MemoryPart<ShamirShare<gfp_<0, 2> > >::indirect_read<StackedVector<Integer> > (this=<optimised out>, inst=..., regs=..., indices=...) at ./Processor/Memory.hpp:26
+  26            *dest++ = data[it->get()];
+
+Entering ``bt`` (for backtrace) gives even more information as to
+where the error happened::
+
+  (gdb) bt
+  #0  0x0000000000434c57 in MemoryPart<ShamirShare<gfp_<0, 2> > >::indirect_read<StackedVector<Integer> > (this=<optimised out>, inst=..., regs=..., indices=...) at ./Processor/Memory.hpp:26
+  #1  Program::execute<ShamirShare<gfp_<0, 2> >, ShamirShare<gf2n_long> > (this=0x620cc0, Proc=...) at ./Processor/Instruction.hpp:1486
+  #2  0x0000000000428fd1 in thread_info<ShamirShare<gfp_<0, 2> >, ShamirShare<gf2n_long> >::Sub_Main_Func (this=<optimised out>, this@entry=0x656900) at ./Processor/Online-Thread.hpp:280
+  #3  0x0000000000426e45 in thread_info<ShamirShare<gfp_<0, 2> >, ShamirShare<gf2n_long> >::Main_Func_With_Purge (this=0x656900) at ./Processor/Online-Thread.hpp:431
+  #4  thread_info<ShamirShare<gfp_<0, 2> >, ShamirShare<gf2n_long> >::Main_Func (ptr=0x656900) at ./Processor/Online-Thread.hpp:410
+  #5  0x00007ffff6bbaac3 in start_thread (arg=<optimised out>) at ./nptl/pthread_create.c:442
+  #6  0x00007ffff6c4c850 in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:81
+
+This information can be very useful to find the error and fix bugs, so
+make sure to include it in GitHub issues etc.

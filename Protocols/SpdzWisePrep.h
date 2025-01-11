@@ -23,12 +23,11 @@ class SpdzWisePrep : public MaliciousRingPrep<T>
 
     void buffer_inputs(int player);
 
-    template<int X, int L>
-    void buffer_bits(MaliciousRep3Share<gfp_<X, L>>);
-    template<int X, int L>
-    void buffer_bits(MaliciousShamirShare<gfp_<X, L>>);
-    template<class U>
-    void buffer_bits(U);
+    void buffer_bits(false_type, true_type, false_type);
+    void buffer_bits(true_type, true_type, false_type);
+    void buffer_bits(true_type, false_type, true_type);
+    void buffer_bits(false_type, false_type, false_type);
+    void buffer_bits(false_type, false_type, true_type);
 
 public:
     SpdzWisePrep(SubProcessor<T>* proc, DataPositions& usage) :

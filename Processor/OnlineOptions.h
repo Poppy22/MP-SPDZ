@@ -12,6 +12,8 @@
 
 class OnlineOptions
 {
+    void finalize_with_error(ez::ezOptionParser& opt);
+
 public:
     static OnlineOptions singleton;
 
@@ -38,6 +40,7 @@ public:
     std::string disk_memory;
     vector<long> args;
     vector<string> options;
+    string executable;
 
     OnlineOptions();
     OnlineOptions(ez::ezOptionParser& opt, int argc, const char** argv,

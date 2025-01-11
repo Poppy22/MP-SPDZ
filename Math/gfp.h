@@ -311,6 +311,11 @@ typedef gfp_<1, GFP_MOD_SZ> gfp1;
 
 template<int X, int L>
 Zp_Data gfp_<X, L>::ZpD;
+template<int X, int L>
+gfp_<X, L> gfp_<X, L>::two;
+
+template<int X, int L>
+const true_type gfp_<X, L>::prime_field;
 
 template<int X, int L>
 thread_local vector<gfp_<X, L>> gfp_<X, L>::powers;

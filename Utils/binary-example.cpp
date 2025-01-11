@@ -3,33 +3,7 @@
  *
  */
 
-#include "GC/TinierSecret.h"
-#include "GC/PostSacriSecret.h"
-#include "GC/CcdSecret.h"
-#include "GC/MaliciousCcdSecret.h"
-#include "GC/AtlasSecret.h"
-#include "GC/TinyMC.h"
-#include "GC/VectorInput.h"
-#include "GC/PostSacriBin.h"
-#include "Protocols/ProtocolSet.h"
-
-#include "GC/ShareSecret.hpp"
-#include "GC/CcdPrep.hpp"
-#include "GC/TinierSharePrep.hpp"
-#include "GC/RepPrep.hpp"
-#include "GC/Secret.hpp"
-#include "GC/TinyPrep.hpp"
-#include "GC/ThreadMaster.hpp"
-#include "GC/SemiSecret.hpp"
-#include "Protocols/Atlas.hpp"
-#include "Protocols/MaliciousRepPrep.hpp"
-#include "Protocols/Share.hpp"
-#include "Protocols/MaliciousRepMC.hpp"
-#include "Protocols/Shamir.hpp"
-#include "Protocols/fake-stuff.hpp"
-#include "Machines/ShamirMachine.hpp"
-#include "Machines/Rep4.hpp"
-#include "Machines/Rep.hpp"
+#include "Machines/maximal.hpp"
 
 template<class T>
 void run(int argc, char** argv);

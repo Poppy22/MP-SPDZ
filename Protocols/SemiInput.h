@@ -7,6 +7,7 @@
 #define PROTOCOLS_SEMIINPUT_H_
 
 #include "ReplicatedInput.h"
+#include "Hemi.h"
 
 template<class T> class SemiMC;
 

@@ -8,8 +8,8 @@
 
 #include "Protocols/Shamir.h"
 #include "Protocols/ShamirInput.h"
-#include "Machines/ShamirMachine.h"
 #include "GC/NoShare.h"
+#include "ShamirOptions.h"
 #include "ShareInterface.h"
 
 template<class T> class ReplicatedPrep;
@@ -49,7 +49,7 @@ public:
 
     const static bool needs_ot = false;
     const static bool dishonest_majority = false;
-    const static bool variable_players = true;
+    static true_type variable_players;
     const static bool expensive = false;
     const static bool malicious = false;
     const static int bit_generation_threshold = 3;
@@ -135,5 +135,8 @@ public:
         T::unpack(os);
     }
 };
+
+template<class T>
+true_type ShamirShare<T>::variable_players;
 
 #endif /* PROTOCOLS_SHAMIRSHARE_H_ */

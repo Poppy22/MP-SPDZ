@@ -28,7 +28,7 @@ using namespace std;
 #define CONNECTION_TIMEOUT 60
 #endif
 
-void error(const char *str);
+void error(const char *str, bool interrupted = false);
 
 void set_up_client_socket(int& mysocket,const char* hostname,int Portnum);
 void close_client_socket(int socket);
@@ -51,7 +51,7 @@ inline size_t send_non_blocking(int socket, octet* msg, size_t len)
     {
       if (errno != EINTR and errno != EAGAIN and errno != EWOULDBLOCK and
 	  errno != ENOBUFS)
-        { error("Send error - 1 ");  }
+        { error("Sending error", true);  }
       else
         return 0;
     }
@@ -103,14 +103,14 @@ inline void receive(int socket,octet *msg,size_t len)
           if (errno == EAGAIN or errno == EINTR)
             {
               if (++fail > 25)
-                error("Unavailable too many times");
+                error("Unavailable too many times", true);
               else
                 {
                   usleep(wait *= 2);
                 }
             }
           else
-            { error("Receiving error - 1"); }
+            { error("Receiving error", true); }
         }
       else
         throw closed_connection();
@@ -130,7 +130,7 @@ inline ssize_t check_non_blocking_result(ssize_t res)
   if (res < 0)
     {
       if (errno != EWOULDBLOCK)
-        error("Non-blocking receiving error");
+        error("Non-blocking receiving error", true);
       return 0;
     }
   return res;
@@ -149,7 +149,7 @@ inline ssize_t receive_all_or_nothing(int socket, octet *msg, ssize_t len)
   if (res == len)
     {
       if (recv(socket, msg, len, 0) != len)
-        error("All or nothing receiving error");
+        error("All or nothing receiving error", true);
       return len;
     }
   else

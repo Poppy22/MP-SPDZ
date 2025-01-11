@@ -49,18 +49,29 @@ for dabit in ${dabit:-0 1 2}; do
 
     ./compile.py -R 64 $compile_opts tutorial
 
-    for i in ring rep4-ring semi2k brain mal-rep-ring ps-rep-ring sy-rep-ring \
-	     spdz2k dealer-ring; do
+    for i in ring rep4-ring semi2k sy-rep-ring spdz2k dealer-ring; do
 	test_vm $i $run_opts
     done
+
+    if test -z "$slim"; then
+	for i in brain mal-rep-ring ps-rep-ring; do
+	    test_vm $i $run_opts
+	done
+    fi
 
     ./compile.py  $compile_opts tutorial
 
-    for i in rep-field shamir mal-rep-field ps-rep-field sy-rep-field \
+    for i in rep-field shamir sy-rep-field \
 		       atlas mal-shamir sy-shamir hemi semi temi \
-		       soho mascot mama; do
+		       soho mascot; do
 	test_vm $i $run_opts
     done
+
+    if test -z "$slim"; then
+	for i in mal-rep-field ps-rep-field mama; do
+	    test_vm $i $run_opts
+	done
+    fi
 
     for i in cowgear chaigear; do
 	test_vm $i $run_opts -S 3 -c 2

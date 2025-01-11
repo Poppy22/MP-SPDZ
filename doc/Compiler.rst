@@ -144,6 +144,15 @@ Compiler.path_oblivious_heap module
 		     dprint_ln, dprint_ln_if, dprint_str, indent, outdent,
 
 
+Compiler.dijkstra module
+------------------------
+
+.. automodule:: Compiler.dijkstra
+   :members:
+   :no-undoc-members:
+   :exclude-members: IntVectorArray, Matrix, Vector, VectorArray, VectorList
+
+
 Compiler.sorting module
 -----------------------
 .. automodule:: Compiler.sorting

@@ -216,7 +216,8 @@ void Replicated<T>::stop_exchange()
 template<class T>
 void ProtocolBase<T>::add_mul(int n)
 {
-    this->counter++;
+    // counted in SubProcessor
+    // this->counter++;
     this->bit_counter += n < 0 ? T::default_length : n;
 }
 

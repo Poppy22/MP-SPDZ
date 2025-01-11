@@ -12,8 +12,20 @@
 #include "Tools/WaitQueue.h"
 #include "Tools/time-func.h"
 
+class CommunicationThread
+{
+    int other;
+
+protected:
+    CommunicationThread(int other);
+    virtual ~CommunicationThread() {}
+
+    void run();
+    virtual void run_with_error() = 0;
+};
+
 template<class T>
-class Receiver
+class Receiver : CommunicationThread
 {
     T socket;
     WaitQueue<octetStream*> in;
@@ -27,12 +39,12 @@ class Receiver
 
     void start();
     void stop();
-    void run();
+    void run_with_error();
 
 public:
     Timer timer;
 
-    Receiver(T socket);
+    Receiver(T socket, int other);
     ~Receiver();
 
     T get_socket()

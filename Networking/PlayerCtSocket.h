@@ -32,7 +32,7 @@ class PlayerCtSocket : public osuCrypto::SocketInterface
         {
             for (auto& buffer : buffers)
             {
-                auto data = boost::asio::buffer_cast<osuCrypto::u8*>(buffer);
+                auto data = (octet*) buffer.data();
                 auto size = boost::asio::buffer_size(buffer);
                 this->buffers.push_back({data, size});
             }

@@ -8,7 +8,7 @@
 
 #include "MAC_Check_Base.h"
 #include "Protocols/ShamirShare.h"
-#include "Machines/ShamirMachine.h"
+#include "ShamirOptions.h"
 #include "Tools/Bundle.h"
 
 /**
@@ -70,6 +70,7 @@ public:
     virtual void prepare_open(const T& secret, int = -1);
     virtual void exchange(const Player& P);
     virtual typename T::open_type finalize_raw();
+    virtual array<typename T::open_type*, 2> finalize_several(size_t n);
 
     void Check(const Player& P) { (void)P; }
 

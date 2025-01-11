@@ -14,8 +14,8 @@ void MemoryPart<T>::indirect_read(const Instruction& inst,
 #ifndef NO_CHECK_SIZE
   assert(start + n <= indices.end());
   assert(dest + n <= regs.end());
-#endif
   size_t size = this->size();
+#endif
   const T* data = this->data();
   for (auto it = start; it < start + n; it++)
     {
@@ -38,8 +38,8 @@ void MemoryPart<T>::indirect_write(const Instruction& inst,
 #ifndef NO_CHECK_SIZE
   assert(start + n <= indices.end());
   assert(source + n <= regs.end());
-#endif
   size_t size = this->size();
+#endif
   T* data = this->data();
   for (auto it = start; it < start + n; it++)
     {

@@ -144,6 +144,9 @@ void ShareThread<T>::and_(Processor<T>& processor,
             res.mask(res, n);
         }
     }
+
+    if (OnlineOptions::singleton.has_option("always_check"))
+        protocol->check();
 }
 
 template<class T>
@@ -195,6 +198,9 @@ void ShareThread<T>::andrsvec(Processor<T>& processor, const vector<int>& args)
         }
         it += 2 * n_args + 1;
     }
+
+    if (OnlineOptions::singleton.has_option("always_check"))
+        protocol->check();
 }
 
 template<class T>

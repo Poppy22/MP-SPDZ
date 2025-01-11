@@ -19,6 +19,8 @@ public:
     typedef Direct_MAC_Check<This> Direct_MC;
     typedef ::Input<This> Input;
     typedef ::PrivateOutput<This> PrivateOutput;
+    typedef Beaver<This> BasicProtocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
     typedef SPDZ<This> Protocol;
     typedef CowGearPrep<This> LivePrep;
 

@@ -357,6 +357,7 @@ void thread_info<sint, sgf2n>::Sub_Main_Func()
   NamedStats stats;
   stats["integer multiplications"] = Proc.Procp.protocol.counter;
   stats["integer multiplication rounds"] = Proc.Procp.protocol.rounds;
+  stats["integer dot products"] = Proc.Procp.protocol.dot_counter;
   stats["probabilistic truncations"] = Proc.Procp.protocol.trunc_pr_counter;
   stats["probabilistic truncation rounds"] = Proc.Procp.protocol.trunc_rounds;
   stats["ANDs"] = Proc.share_thread.protocol->bit_counter;

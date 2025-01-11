@@ -3,7 +3,6 @@
  *
  */
 
-#include "ShamirMachine.h"
 #include "Protocols/SpdzWiseShare.h"
 #include "Protocols/MaliciousShamirShare.h"
 #include "Protocols/SpdzWiseMC.h"
@@ -19,7 +18,7 @@
 #include "Protocols/SpdzWisePrep.hpp"
 #include "Protocols/SpdzWiseInput.hpp"
 #include "Protocols/SpdzWiseShare.hpp"
-#include "Machines/ShamirMachine.hpp"
+#include "Machines/Shamir.hpp"
 #include "Machines/MalRep.hpp"
 
 template<class T>

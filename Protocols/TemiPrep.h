@@ -38,7 +38,7 @@ public:
  * Semi-honest triple generation with semi-homomorphic encryption
  */
 template<class T>
-class TemiPrep : public SemiHonestRingPrep<T>
+class TemiPrep : public HemiPrep<T>
 {
     friend class HemiMatrixPrep<T>;
 
@@ -62,7 +62,7 @@ public:
     TemiPrep(SubProcessor<T>* proc, DataPositions& usage) :
             BufferPrep<T>(usage),
             BitPrep<T>(proc, usage), RingPrep<T>(proc, usage),
-            SemiHonestRingPrep<T>(proc, usage)
+            HemiPrep<T>(proc, usage)
     {
     }
 

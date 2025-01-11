@@ -90,7 +90,7 @@ string octetStream::str() const
 
 void octetStream::hash(octetStream& output) const
 {
-  assert(output.mxlen >= crypto_generichash_blake2b_BYTES_MIN);
+  output.resize(crypto_generichash_BYTES_MIN);
   crypto_generichash(output.data, crypto_generichash_BYTES_MIN, data, len, NULL, 0);
   output.len=crypto_generichash_BYTES_MIN;
 }
@@ -220,6 +220,15 @@ void octetStream::exchange(T send_socket, T receive_socket, octetStream& receive
     ;
 }
 
+
+
+void octetStream::input(const string& filename)
+{
+  ifstream s(filename);
+  if (not s.good())
+    throw file_error("cannot read from " + filename);
+  input(s);
+}
 
 void octetStream::input(istream& s)
 {

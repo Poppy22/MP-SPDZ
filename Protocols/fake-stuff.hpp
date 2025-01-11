@@ -33,50 +33,10 @@ template<class T> class MaliciousCcdSecret;
 template<class T, class U, class V, class W>
 void make_share(Share_<T, W>* Sa,const U& a,int N,const V& key,PRNG& G)
 {
-  T x;
-  W mac, y;
-  mac = a * key;
-  Share_<T, W> S;
-  S.set_share(a);
-  S.set_mac(mac);
-
-  for (int i=0; i<N-1; i++)
-    { x.randomize(G);
-      y.randomize(G);
-      Sa[i].set_share(x);
-      Sa[i].set_mac(y);
-      S.sub(S,Sa[i]);
-    }
-  Sa[N-1]=S;
-}
-
-template<class T, class U>
-void make_share(SpdzWiseShare<MaliciousRep3Share<T>>* Sa,const U& a,int N,const T& key,PRNG& G)
-{
-  auto mac = a * key;
-  FixedVec<T, 3> shares, macs;
-  shares.randomize_to_sum(a, G);
-  macs.randomize_to_sum(mac, G);
-
-  for (int i = 0; i < N; i++)
-    {
-      MaliciousRep3Share<T> share, mac;
-      share[0] = shares[i];
-      share[1] = shares[positive_modulo(i - 1, 3)];
-      mac[0] = macs[i];
-      mac[1] = macs[positive_modulo(i - 1, 3)];
-      Sa[i].set_share(share);
-      Sa[i].set_mac(mac);
-    }
-}
-
-template<class T, class U, class V>
-void make_share(SpdzWiseShare<MaliciousShamirShare<T>>* Sa, const U& a, int N,
-    const V& key, PRNG& G)
-{
-  vector<MaliciousShamirShare<T>> shares(N), macs(N);
-  make_share(shares.data(), a, N, {}, G);
-  make_share(macs.data(), a * key, N, {}, G);
+  vector<T> shares(N);
+  vector<W> macs(N);
+  make_share(shares.data(), a, N, GC::NoValue(), G);
+  make_share(macs.data(), a * key, N, GC::NoValue(), G);
   for (int i = 0; i < N; i++)
     {
       Sa[i].set_share(shares[i]);
@@ -610,16 +570,15 @@ void make_inverse(const KeySetup<T>& key, int N, int ntrip, bool zero,
   check_files(files.outf, N);
 }
 
-template<class T>
-void plain_edabits(vector<typename T::clear>& as,
-    vector<typename T::bit_type::part_type::clear>& bs, int length, PRNG& G,
+template<class T, class U>
+void plain_edabits(vector<T>& as,
+    vector<U>& bs, int length, PRNG& G, int max_size,
     bool zero = false)
 {
-  int max_size = edabitvec<T>::MAX_SIZE;
   as.resize(max_size);
   bs.clear();
   bs.resize(length);
-  Z2<T::clear::MAX_EDABITS> value;
+  Z2<T::MAX_EDABITS> value;
   for (int j = 0; j < max_size; j++)
     {
       if (not zero)

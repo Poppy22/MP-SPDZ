@@ -51,6 +51,11 @@ public:
     static void trans(Processor<T>& processor, int n_outputs,
             const vector<int>& args);
 
+    static size_t maximum_size()
+    {
+        return default_length;
+    }
+
     SemiSecretBase()
     {
     }

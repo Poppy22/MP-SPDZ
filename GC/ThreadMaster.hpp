@@ -60,6 +60,25 @@ Thread<T>* ThreadMaster<T>::new_thread(int i)
 template<class T>
 void ThreadMaster<T>::run()
 {
+    if (opts.has_option("throw_exceptions"))
+        run_with_error();
+    else
+    {
+        try
+        {
+            run_with_error();
+        }
+        catch (exception& e)
+        {
+            cerr << "Fatal error: " << e.what() << endl;
+            exit(1);
+        }
+    }
+}
+
+template<class T>
+void ThreadMaster<T>::run_with_error()
+{
     if (not opts.live_prep)
     {
         insecure("preprocessing from file in binary virtual machines");
@@ -72,6 +91,9 @@ void ThreadMaster<T>::run()
 
     for (int i = 0; i < machine.nthreads; i++)
         threads.push_back(new_thread(i));
+    // must start after constructor due to virtual functions
+    for (auto thread : threads)
+        thread->start();
     for (auto thread : threads)
         thread->join_tape();
 

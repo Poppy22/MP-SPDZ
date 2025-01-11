@@ -422,7 +422,7 @@ def mux_exp(x, y, block_size=8):
 @types.vectorize
 @instructions_base.sfix_cisc
 def log2_fx(x, use_division=True):
-    """
+    r"""
     Returns the result of :math:`\log_2(x)` for any unbounded
     number. This is achieved by changing :py:obj:`x` into
     :math:`f \cdot 2^n` where f is bounded by :math:`[0.5, 1]`.  Then the
@@ -463,7 +463,7 @@ def log2_fx(x, use_division=True):
 
 
 def pow_fx(x, y, zero_output=False):
-    """
+    r"""
     Returns the value of the expression :math:`x^y` where both inputs
     are secret shared. It uses  :py:func:`log2_fx` together with
     :py:func:`exp2_fx` to calculate the expression :math:`2^{y \log_2(x)}`.
@@ -487,7 +487,7 @@ def pow_fx(x, y, zero_output=False):
 
 
 def log_fx(x, b):
-    """
+    r"""
     Returns the value of the expression :math:`\log_b(x)` where
     :py:obj:`x` is secret shared. It uses :py:func:`log2_fx` to
     calculate the expression :math:`\log_b(2) \cdot \log_2(x)`.
@@ -859,7 +859,7 @@ def atan(x):
 
 
 def asin(x):
-    """
+    r"""
     Returns the arcsine (sfix) of any given fractional value.
 
     :param x: fractional input (sfix). valid interval is :math:`-1 \le x \le 1`
@@ -875,7 +875,7 @@ def asin(x):
 
 
 def acos(x):
-    """
+    r"""
     Returns the arccosine (sfix) of any given fractional value.
 
     :param x: fractional input (sfix). :math:`-1 \le x \le 1`
@@ -887,7 +887,7 @@ def acos(x):
 
 
 def tanh(x):
-    """
+    r"""
     Hyperbolic tangent. For efficiency, accuracy is diminished
     around :math:`\pm \log(k - f - 2) / 2` where :math:`k` and
     :math:`f` denote the fixed-point parameters.
@@ -905,7 +905,7 @@ def Sep(x, sfix=types.sfix):
     b = floatingpoint.PreOR(list(reversed(x.v.bit_decompose(x.k, maybe_mixed=True))))
     bb = b[:]
     while len(bb) < 2 * x.f - 1:
-        bb.insert(0, type(b[0])(0))
+        bb.insert(0, type(b[0])(types.cint(0)))
     t = x.v * (1 + x.v.bit_compose(b_i.bit_not()
                                    for b_i in bb[-2 * x.f + 1:]))
     u = sfix._new(t.right_shift(x.f, 2 * x.k, signed=False))

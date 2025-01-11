@@ -7,15 +7,7 @@
 
 #define NO_MIXED_CIRCUITS
 
-#include "Math/gfp.hpp"
-#include "Machines/SPDZ.hpp"
-#include "Machines/SPDZ2k.hpp"
-#include "Machines/MalRep.hpp"
-#include "Machines/ShamirMachine.hpp"
-#include "Machines/Semi2k.hpp"
-#include "Protocols/CowGearShare.h"
-#include "Protocols/CowGearPrep.hpp"
-#include "Protocols/ProtocolSet.h"
+#include "Machines/maximal.hpp"
 
 template<class T>
 void run(char** argv, int prime_length);

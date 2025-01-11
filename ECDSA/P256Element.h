@@ -51,6 +51,7 @@ public:
     P256Element operator*(const Scalar& other) const;
 
     P256Element& operator+=(const P256Element& other);
+    P256Element& operator*=(const Scalar& other);
     P256Element& operator/=(const Scalar& other);
 
     bool operator==(const P256Element& other) const;
@@ -58,6 +59,8 @@ public:
 
     void pack(octetStream& os, int = -1) const;
     void unpack(octetStream& os, int = -1);
+
+    void output(ostream& s, bool human) const;
 
     friend ostream& operator<<(ostream& s, const P256Element& x);
 };

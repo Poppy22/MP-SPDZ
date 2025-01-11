@@ -60,6 +60,9 @@ class octetStream
   // buffers for bit packing
   array<BitBuffer, 2> bits;
 
+  // keep private to avoid confusing conversion from integers
+  octetStream(size_t maxlen);
+
   void reset();
 
   public:
@@ -75,8 +78,6 @@ class octetStream
   void assign(const octetStream& os);
 
   octetStream() : len(0), mxlen(0), ptr(0), data(0) {}
-  /// Initial allocation
-  octetStream(size_t maxlen);
   /// Initial buffer
   octetStream(size_t len, const octet* source);
   /// Initial buffer
@@ -114,7 +115,6 @@ class octetStream
 
   /// Hash content
   octetStream hash()   const;
-  // output must have length at least HASH_SIZE
   void hash(octetStream& output)   const;
   // The following produces a check sum for debugging purposes
   bigint check_sum(int req_bytes=crypto_hash_BYTES)       const;
@@ -250,6 +250,8 @@ class octetStream
   template<class T>
   void Receive(T socket_num);
 
+  /// Input from file, overwriting current content
+  void input(const string& filename);
   /// Input from stream, overwriting current content
   void input(istream& s);
   /// Output to stream

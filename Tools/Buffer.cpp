@@ -36,11 +36,10 @@ void BufferBase::seekg(int pos)
 {
     assert(not is_pipe());
 
-#ifdef DEBUG_BUFFER
-    if (pos != 0)
+    if (pos != 0 and OnlineOptions::singleton.has_option("verbose_buffer"))
         printf("seek %d %s thread %d\n", pos, filename.c_str(),
                 BaseMachine::thread_num);
-#endif
+
     if (not file)
     {
         if (pos == 0)
@@ -65,6 +64,7 @@ void BufferBase::seekg(int pos)
 
 void BufferBase::try_rewind()
 {
+    assert(not OnlineOptions::singleton.has_option("no_rewind"));
     assert(not is_pipe());
 
 #ifndef INSECURE

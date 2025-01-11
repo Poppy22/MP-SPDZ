@@ -260,7 +260,7 @@ class Program(object):
                 os.mkdir(dirname)
 
         # create extra directories if needed
-        for dirname in ["Public-Input", "Bytecode", "Schedules"]:
+        for dirname in ["Public-Input", "Bytecode", "Schedules", "Functions"]:
             if not os.path.exists(self.programs_dir + "/" + dirname):
                 os.mkdir(self.programs_dir + "/" + dirname)
 
@@ -859,6 +859,7 @@ class Tape:
         self.warned_about_mem = False
         self.return_values = []
         self.ran_threads = False
+        self.unused_decorators = {}
 
     class BasicBlock(object):
         def __init__(self, parent, name, scope, exit_condition=None,
@@ -1053,6 +1054,10 @@ class Tape:
                     pass
             print()
             raise CompilerError("Unclosed if/else blocks, see tracebacks above")
+
+        if self.unused_decorators:
+            raise CompilerError("Unused branching decorators, make sure to write " + ",".join(
+                "'@%s' instead of '%s'" % (x, x) for x in set(self.unused_decorators.values())))
 
         if self.program.verbose:
             print(
@@ -1561,10 +1566,7 @@ class Tape:
         def __bool__(self):
             raise CompilerError(
                 "Cannot derive truth value from register. "
-                "This is a catch-all error appearing if you try to use a "
-                "run-time value where the compiler expects a compile-time "
-                "value, most likely a Python integer. "
-                "In some cases, you can fix this by using 'compile.py -l'."
+                "See https://mp-spdz.readthedocs.io/en/latest/troubleshooting.html#cannot-derive-truth-value-from-register"
             )
 
         def __int__(self):
@@ -1599,6 +1601,7 @@ class Tape:
             "caller",
             "can_eliminate",
             "duplicates",
+            "dup_count",
             "block",
         ]
         maximum_size = 2 ** (64 - inst_base.Instruction.code_length) - 1
@@ -1631,6 +1634,7 @@ class Tape:
             self.vector = []
             self.can_eliminate = True
             self.duplicates = util.set_by_id([self])
+            self.dup_count = None
             if Program.prog.DEBUG:
                 self.caller = [frame[1:] for frame in inspect.stack()[1:]]
             else:

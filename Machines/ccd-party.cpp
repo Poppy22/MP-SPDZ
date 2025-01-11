@@ -13,7 +13,7 @@
 #include "GC/ThreadMaster.hpp"
 #include "GC/Secret.hpp"
 #include "GC/CcdPrep.hpp"
-#include "Machines/ShamirMachine.hpp"
+#include "Machines/Shamir.hpp"
 
 int main(int argc, const char** argv)
 {

@@ -30,7 +30,7 @@ BaseMachine& BaseMachine::s()
   if (singleton)
     return *singleton;
   else
-    throw runtime_error("no singleton");
+    throw runtime_error("no BaseMachine singleton");
 }
 
 bool BaseMachine::has_program()
@@ -72,7 +72,8 @@ int BaseMachine::bucket_size(size_t usage)
 
 int BaseMachine::matrix_batch_size(int n_rows, int n_inner, int n_cols)
 {
-  unsigned res = min(100, OnlineOptions::singleton.batch_size);
+  int limit = max(1., 1e6 / (max(n_rows * n_inner, n_inner * n_cols)));
+  unsigned res = min(limit, OnlineOptions::singleton.batch_size);
   if (has_program())
     res = min(res, (unsigned) matrix_requirement(n_rows, n_inner, n_cols));
   return res;
@@ -93,7 +94,8 @@ int BaseMachine::matrix_requirement(int n_rows, int n_inner, int n_cols)
     return -1;
 }
 
-BaseMachine::BaseMachine() : nthreads(0)
+BaseMachine::BaseMachine() :
+    nthreads(0), multithread(false)
 {
   if (sodium_init() == -1)
     throw runtime_error("couldn't initialize libsodium");
@@ -147,7 +149,12 @@ void BaseMachine::load_schedule(const string& progname, bool load_bytecode)
 #endif
           long size = load_program(threadname, filename);
           if (expected >= 0 and expected != size)
-            throw runtime_error("broken bytecode file");
+            {
+              stringstream os;
+              os << "broken bytecode file, found " << size
+                  << " instructions, expected " << expected;
+              throw runtime_error(os.str());
+            }
         }
 
     }

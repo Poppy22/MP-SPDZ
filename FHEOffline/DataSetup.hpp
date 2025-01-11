@@ -27,8 +27,7 @@ void read_or_generate_secrets(T& setup, Player& P, U& machine,
 
     try
     {
-        ifstream input(filename);
-        os.input(input);
+        os.input(filename);
         setup.unpack(os);
         machine.unpack(os);
     }
@@ -44,11 +43,15 @@ void read_or_generate_secrets(T& setup, Player& P, U& machine,
     }
     catch (mismatch_among_parties& e)
     {
-        error = e.what();
+        if (error.empty())
+            error = e.what();
     }
 
     if (not error.empty())
     {
+        if (OnlineOptions::singleton.has_option("expect_setup"))
+            throw runtime_error("error in setup: " + error);
+
         cerr << "Running secrets generation because no suitable material "
                 "from a previous run was found (" << error << ")" << endl;
         setup.key_and_mac_generation(P, machine, num_runs, V());

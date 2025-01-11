@@ -31,7 +31,12 @@ template<class T>
 Thread<T>::Thread(int thread_num, ThreadMaster<T>& master) :
         master(master), machine(master.machine), processor(machine),
         N(master.N), P(0),
-        thread_num(thread_num)
+        thread_num(thread_num), thread(0)
+{
+}
+
+template<class T>
+void Thread<T>::start()
 {
     pthread_create(&thread, 0, run_thread, this);
 }

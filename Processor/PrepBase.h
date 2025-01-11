@@ -30,6 +30,9 @@ public:
     static string get_edabit_filename(const string& prep_data_dir, int n_bits,
             int my_num, int thread_num = 0);
 
+    static string get_matrix_prefix(const string& prep_data_dir,
+            const array<int, 3>& dim);
+
     TimerWithComm prep_timer;
 
     PrepBase(DataPositions& usage);

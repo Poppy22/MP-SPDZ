@@ -3,7 +3,7 @@
  *
  */
 
-#include "ShamirMachine.hpp"
+#include <Machines/Shamir.hpp>
 #include "MalRep.hpp"
 #include "Processor/OfflineMachine.hpp"
 

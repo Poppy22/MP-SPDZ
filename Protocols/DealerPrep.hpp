@@ -217,7 +217,7 @@ void DealerPrep<T>::buffer_edabits(int length, false_type)
         {
             vector<typename T::clear> as;
             vector<typename T::bit_type::part_type::clear> bs;
-            plain_edabits<T>(as, bs, length, G);
+            plain_edabits(as, bs, length, G, edabitvec<T>::MAX_SIZE);
             for (auto& a : as)
             {
                 make_share(shares.data(), a, P.num_players() - 1, 0, G);

@@ -19,14 +19,17 @@ template <int K>
 class Semi2kShare : public SemiShare<SignedZ2<K>>
 {
     typedef SignedZ2<K> T;
+    typedef Semi2kShare This;
 
 public:
     typedef SemiMC<Semi2kShare> MAC_Check;
     typedef DirectSemiMC<Semi2kShare> Direct_MC;
     typedef SemiInput<Semi2kShare> Input;
     typedef ::PrivateOutput<Semi2kShare> PrivateOutput;
-    typedef Semi<Semi2kShare> Protocol;
+    typedef Semi<Semi2kShare> BasicProtocol;
     typedef SemiPrep2k<Semi2kShare> LivePrep;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     typedef Semi2kShare prep_type;
     typedef SemiMultiplier<Semi2kShare> Multiplier;

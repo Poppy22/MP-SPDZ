@@ -6,6 +6,9 @@
 #ifndef MACHINES_SPDZ_HPP_
 #define MACHINES_SPDZ_HPP_
 
+#include "Protocols/MAC_Check.h"
+#include "Protocols/SPDZ.h"
+
 #include "Processor/Data_Files.hpp"
 #include "Processor/Instruction.hpp"
 #include "Processor/Machine.hpp"

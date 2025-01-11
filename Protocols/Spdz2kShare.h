@@ -28,6 +28,8 @@ template<int S> class TinySecret;
 template<int K, int S>
 class Spdz2kShare : public Share<Z2<K + S>>
 {
+    typedef Spdz2kShare This;
+
 public:
     typedef Z2<K + S> tmp_type;
     typedef Share<tmp_type> super;
@@ -51,6 +53,8 @@ public:
     typedef Direct_MAC_Check_Z2k<Spdz2kShare> Direct_MC;
     typedef ::Input<Spdz2kShare> Input;
     typedef ::PrivateOutput<Spdz2kShare> PrivateOutput;
+    typedef Beaver<This> BasicProtocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
     typedef SPDZ2k<Spdz2kShare> Protocol;
     typedef Spdz2kPrep<Spdz2kShare> LivePrep;
 

@@ -737,6 +737,7 @@ class sbitvec(_vec, _bit, _binary):
         :py:obj:`v` and the columns by calling :py:obj:`elements`.
         """
         class sbitvecn(cls, _structure):
+            n_bits = n
             @staticmethod
             def get_type(n):
                 return cls.get_type(n)
@@ -757,17 +758,19 @@ class sbitvec(_vec, _bit, _binary):
 
                 :param: player (int)
                 """
-                v = [0] * n
                 sbits._check_input_player(player)
                 instructions_base.check_vector_size(size)
-                for i in range(size):
-                    vv = [sbit() for i in range(n)]
-                    inst.inputbvec(n + 3, f, player, *vv)
-                    for j in range(n):
-                        tmp = vv[j] << i
-                        v[j] = tmp ^ v[j]
-                        sbits._check_input_player(player)
-                return cls.from_vec(v)
+                if size == 1:
+                    res = cls.from_vec(sbit() for i in range(n))
+                    inst.inputbvec(n + 3, f, player, *res.v)
+                    return res
+                else:
+                    elements = []
+                    for i in range(size):
+                        v = sbits.get_type(n)()
+                        inst.inputb(player, n, f, v)
+                        elements.append(v)
+                    return cls(elements)
             get_raw_input_from = get_input_from
             @classmethod
             def from_vec(cls, vector):
@@ -1426,6 +1429,9 @@ class sbitintvec(sbitvec, _bitint, _number, _sbitintbase):
 
         :param k: bit length of input """
         return _sbitintbase.pow2(self, k)
+    @staticmethod
+    def reverse_type(other):
+        return isinstance(other, sbitfixvec)
 
 sbits.vec = sbitvec
 sbitint.vec = sbitintvec

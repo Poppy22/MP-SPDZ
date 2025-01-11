@@ -50,7 +50,7 @@ public:
         return *part_MC;
     }
 
-    void init_open(const Player& P, int n)
+    void init_open(const Player& P, int n = 0)
     {
         part_MC->init_open(P);
         sizes.clear();

@@ -63,9 +63,6 @@ else:
 if 'nearest' in program.args:
     sfix.round_nearest = True
 
-if program.options.ring:
-    assert sfix.f * 4 == int(program.options.ring)
-
 debug_ml = ('debug_ml' in program.args) * 2 ** (sfix.f / 2)
 
 if '1dense' in program.args:

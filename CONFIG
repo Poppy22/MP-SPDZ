@@ -71,6 +71,8 @@ CXX = clang++
 # use CONFIG.mine to overwrite DIR settings
 -include CONFIG.mine
 
+AVX_SIMPLEOT := $(AVX_OT)
+
 ifeq ($(USE_GF2N_LONG),1)
 GF2N_LONG = -DUSE_GF2N_LONG
 endif

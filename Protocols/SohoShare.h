@@ -21,8 +21,10 @@ public:
     typedef DirectSemiMC<This> Direct_MC;
     typedef SemiInput<This> Input;
     typedef ::PrivateOutput<This> PrivateOutput;
-    typedef SPDZ<This> Protocol;
+    typedef Beaver<This> BasicProtocol;
+    typedef MaybeHemi<This> Protocol;
     typedef SohoPrep<This> LivePrep;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     static const bool needs_ot = false;
 

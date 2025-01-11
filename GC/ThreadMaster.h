@@ -60,6 +60,7 @@ public:
     virtual Thread<T>* new_thread(int i);
 
     void run();
+    void run_with_error();
 
     virtual void post_run() {}
 };

@@ -15,19 +15,23 @@
 template<class T>
 class Hemi : public T::BasicProtocol
 {
-    map<array<int, 3>, typename T::MatrixPrep*> matrix_preps;
+    typedef Preprocessing<ShareMatrix<T>> matrix_prep;
+
+    map<array<int, 3>, matrix_prep*> matrix_preps;
     DataPositions matrix_usage;
 
-    MatrixMC<T> mc;
+    MatrixMC<T>* mc;
+
+    bool warned = false;
 
 public:
     Hemi(Player& P) :
-            T::BasicProtocol(P)
+            T::BasicProtocol(P), mc(0)
     {
     }
     ~Hemi();
 
-    typename T::MatrixPrep& get_matrix_prep(const array<int, 3>& dimensions,
+    matrix_prep& get_matrix_prep(const array<int, 3>& dimensions,
             SubProcessor<T>& processor);
 
     bool use_plain_matmul(const array<int, 3> dimensions,

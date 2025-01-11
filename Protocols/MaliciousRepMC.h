@@ -15,14 +15,29 @@ protected:
     typedef ReplicatedMC<T> super;
 
 public:
-    virtual void POpen(vector<typename T::open_type>& values,
-            const vector<T>& S, const Player& P);
+    MaliciousRepMC(typename T::mac_key_type = {})
+    {
+    }
+
+    virtual void POpen(vector<typename T::open_type>&,
+            const vector<T>&, const Player&)
+    {
+        throw runtime_error("use subclass");
+    }
+
     virtual void POpen_Begin(vector<typename T::open_type>& values,
             const vector<T>& S, const Player& P);
-    virtual void POpen_End(vector<typename T::open_type>& values,
-            const vector<T>& S, const Player& P);
 
-    virtual void Check(const Player& P);
+    virtual void POpen_End(vector<typename T::open_type>&,
+            const vector<T>&, const Player&)
+    {
+        throw runtime_error("use subclass");
+    }
+
+    virtual void Check(const Player&)
+    {
+        throw runtime_error("use subclass");
+    }
 
     MaliciousRepMC& get_part_MC()
     {

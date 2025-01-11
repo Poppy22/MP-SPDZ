@@ -6,6 +6,7 @@
 #include "GC/SemiSecret.h"
 #include "GC/SemiPrep.h"
 
+#include "Protocols/Hemi.hpp"
 #include "Protocols/SemiMC.hpp"
 #include "Protocols/SemiPrep.hpp"
 #include "Protocols/SemiInput.hpp"

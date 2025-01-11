@@ -399,7 +399,7 @@ class stop(base.Instruction):
     arg_format = ['i']
 
 class use(base.Instruction):
-    """ Offline data usage. Necessary to avoid reusage while using
+    r""" Offline data usage. Necessary to avoid reusage while using
     preprocessing from files. Also used to multithreading for expensive
     preprocessing.
 
@@ -419,7 +419,7 @@ class use(base.Instruction):
                  args[2].i}
 
 class use_inp(base.Instruction):
-    """ Input usage.  Necessary to avoid reusage while using
+    r""" Input usage.  Necessary to avoid reusage while using
     preprocessing from files.
 
     :param: domain (0: integer, 1: :math:`\mathrm{GF}(2^n)`, 2: bit)
@@ -1738,7 +1738,7 @@ class print_reg_plains(base.IOInstruction):
     arg_format = ['s']
 
 class cond_print_plain(base.IOInstruction):
-    """ Conditionally output clear register (with precision).
+    r""" Conditionally output clear register (with precision).
     Outputs :math:`x \cdot 2^p` where :math:`p` is the precision.
 
     :param: condition (cint, no output if zero)
@@ -1989,7 +1989,7 @@ class closeclientconnection(base.IOInstruction):
     code = base.opcodes['CLOSECLIENTCONNECTION']
     arg_format = ['ci']
 
-class writesharestofile(base.IOInstruction):
+class writesharestofile(base.VectorInstruction, base.IOInstruction):
     """ Write shares to ``Persistence/Transactions-P<playerno>.data``
     (appending at the end).
 
@@ -2002,11 +2002,12 @@ class writesharestofile(base.IOInstruction):
     __slots__ = []
     code = base.opcodes['WRITEFILESHARE']
     arg_format = tools.chain(['ci'], itertools.repeat('s'))
+    vector_index = 1
 
     def has_var_args(self):
         return True
 
-class readsharesfromfile(base.IOInstruction):
+class readsharesfromfile(base.VectorInstruction, base.IOInstruction):
     """ Read shares from ``Persistence/Transactions-P<playerno>.data``.
 
     :param: number of arguments to follow / number of shares plus two (int)
@@ -2018,6 +2019,7 @@ class readsharesfromfile(base.IOInstruction):
     __slots__ = []
     code = base.opcodes['READFILESHARE']
     arg_format = tools.chain(['ci', 'ciw'], itertools.repeat('sw'))
+    vector_index = 2
 
     def has_var_args(self):
         return True
@@ -2341,7 +2343,7 @@ class convint(base.Instruction):
 
 @base.vectorize
 class convmodp(base.Instruction):
-    """ Convert clear integer register (vector) to clear register
+    r""" Convert clear integer register (vector) to clear register
     (vector). If the bit length is zero, the unsigned conversion is
     used, otherwise signed conversion is used. This makes a difference
     when computing modulo a prime :math:`p`. Signed conversion of
@@ -2747,9 +2749,10 @@ class gensecshuffle(shuffle_base):
     def add_usage(self, req_node):
         self.add_gen_usage(req_node, self.args[1])
 
-class applyshuffle(base.VectorInstruction, shuffle_base):
+class applyshuffle(shuffle_base, base.Mergeable):
     """ Generate secure shuffle to bit used several times.
 
+    :param: vector size (int)
     :param: destination (sint)
     :param: source (sint)
     :param: number of elements to be treated as one (int)
@@ -2759,15 +2762,20 @@ class applyshuffle(base.VectorInstruction, shuffle_base):
     """
     __slots__ = []
     code = base.opcodes['APPLYSHUFFLE']
-    arg_format = ['sw','s','int','ci','int']
+    arg_format = itertools.cycle(['int', 'sw','s','int','ci','int'])
+    is_vec = lambda self: True # Ensures dead-code elimination works.
 
     def __init__(self, *args, **kwargs):
         super(applyshuffle, self).__init__(*args, **kwargs)
-        assert len(args[0]) == len(args[1])
-        assert len(args[0]) > args[2]
+        assert (len(args) % 6) == 0
+        for i in range(0, len(args), 6):
+            assert args[i] == len(args[i+1])
+            assert args[i] == len(args[i + 2])
+            assert args[i] > args[i + 3]
 
     def add_usage(self, req_node):
-        self.add_apply_usage(req_node, len(self.args[0]), self.args[2])
+        for i in range(0, len(self.args), 6):
+            self.add_apply_usage(req_node, self.args[i], self.args[i + 3])
 
 class delshuffle(base.Instruction):
     """ Delete secure shuffle.
@@ -2814,13 +2822,11 @@ class check(base.Instruction):
 @base.gf2n
 @base.vectorize
 class sqrs(base.CISC):
-    """ Secret squaring $s_i = s_j \cdot s_j$. """
+    r""" Secret squaring $s_i = s_j \cdot s_j$. """
     __slots__ = []
     arg_format = ['sw', 's']
     
     def expand(self):
-        if program.options.ring:
-            return muls(self.args[0], self.args[1], self.args[1])
         s = [program.curr_block.new_reg('s') for i in range(6)]
         c = [program.curr_block.new_reg('c') for i in range(2)]
         square(s[0], s[1])

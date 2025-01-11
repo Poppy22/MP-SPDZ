@@ -8,8 +8,8 @@
 
 #include "Shamir.h"
 #include "ShamirInput.h"
+#include "ShamirOptions.h"
 #include "ShamirShare.h"
-#include "Machines/ShamirMachine.h"
 #include "Tools/benchmarking.h"
 
 template<class T>

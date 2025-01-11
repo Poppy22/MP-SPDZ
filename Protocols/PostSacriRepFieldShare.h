@@ -20,13 +20,15 @@ class PostSacriRepFieldShare : public MaliciousRep3Share<T>
 public:
     typedef typename super::clear clear;
 
-    typedef PostSacrifice<PostSacriRepFieldShare> Protocol;
+    typedef PostSacrifice<PostSacriRepFieldShare> BasicProtocol;
     typedef HashMaliciousRepMC<PostSacriRepFieldShare> MAC_Check;
     typedef MAC_Check Direct_MC;
     typedef ReplicatedInput<PostSacriRepFieldShare> Input;
     typedef ReplicatedPO<This> PO;
     typedef SpecificPrivateOutput<This> PrivateOutput;
     typedef MaliciousRepPrepWithBits<PostSacriRepFieldShare> LivePrep;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     PostSacriRepFieldShare()
     {

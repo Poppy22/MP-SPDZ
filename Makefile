@@ -7,7 +7,7 @@ TOOLS = $(patsubst %.cpp,%.o,$(wildcard Tools/*.cpp))
 
 NETWORK = $(patsubst %.cpp,%.o,$(wildcard Networking/*.cpp))
 
-PROCESSOR = $(patsubst %.cpp,%.o,$(wildcard Processor/*.cpp))
+PROCESSOR = $(patsubst %.cpp,%.o,$(wildcard Processor/*.cpp)) Protocols/ShamirOptions.o
 
 FHEOBJS = $(patsubst %.cpp,%.o,$(wildcard FHEOffline/*.cpp FHE/*.cpp)) Protocols/CowGearOptions.o
 
@@ -59,7 +59,7 @@ DEPS := $(wildcard */*.d */*/*.d)
 .SECONDARY: $(OBJS)
 
 
-all: arithmetic binary gen_input online offline externalIO bmr ecdsa
+all: arithmetic binary gen_input online offline externalIO bmr ecdsa export
 vm: arithmetic binary
 
 .PHONY: doc
@@ -124,7 +124,7 @@ tldr: setup
 	mkdir Player-Data 2> /dev/null; true
 
 ifeq ($(ARM), 1)
-$(patsubst %.cpp,%.o,$(wildcard */*.cpp)): deps/simde/simde
+$(patsubst %.cpp,%.o,$(wildcard */*.cpp */*/*.cpp)): deps/simde/simde deps/sse2neon/sse2neon.h
 endif
 
 shamir: shamir-party.x malicious-shamir-party.x atlas-party.x galois-degree.x
@@ -161,6 +161,17 @@ static-dir:
 	@ mkdir static 2> /dev/null; true
 
 static-release: static-dir $(patsubst Machines/%.cpp, static/%.x, $(wildcard Machines/*-party.cpp))  $(patsubst Machines/BMR/%.cpp, static/%.x, $(wildcard Machines/BMR/*-party.cpp)) static/emulate.x
+
+EXPORT_VM = $(patsubst %.cpp, %.o, $(wildcard Machines/export-*.cpp))
+.SECONDARY: $(EXPORT_VM)
+
+export-trunc.x: Machines/export-ring.o
+export-sort.x: Machines/export-ring.o
+export-msort.x: Machines/export-ring.o
+export-a2b.x: GC/AtlasSecret.o Machines/SPDZ.o Machines/SPDZ2^64+64.o $(GC_SEMI) $(TINIER) $(EXPORT_VM) GC/Rep4Secret.o GC/Rep4Prep.o $(FHEOFFLINE)
+export-b2a.x: Machines/export-ring.o
+
+export: $(patsubst Utils/%.cpp, %.x, $(wildcard Utils/export*.cpp))
 
 Fake-ECDSA.x: ECDSA/Fake-ECDSA.cpp ECDSA/P256Element.o $(COMMON) Processor/PrepBase.o
 	$(CXX) -o $@ $^ $(CFLAGS) $(LDLIBS)
@@ -367,8 +378,11 @@ mac-machine-setup:
 deps/simde/simde:
 	git submodule update --init deps/simde || git clone https://github.com/simd-everywhere/simde deps/simde
 
+deps/sse2neon/sse2neon.h:
+	git submodule update --init deps/sse2neon || git clone https://github.com/DLTcollab/sse2neon deps/sse2neon
+
 clean-deps:
-	-rm -rf local/lib/liblibOTe.* deps/libOTe/out deps/SimplestOT_C
+	-rm -rf local/lib/liblibOTe.* deps/libOTe/out deps/SimplestOT_C deps/SimpleOT
 
 clean: clean-deps
 	-rm -f */*.o *.o */*.d *.d *.x core.* *.a gmon.out */*/*.o static/*.x *.so

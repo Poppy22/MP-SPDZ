@@ -7,8 +7,7 @@
 #define PROTOCOLS_SHAMIRINPUT_HPP_
 
 #include "ShamirInput.h"
-#include "Machines/ShamirMachine.h"
-
+#include "ShamirOptions.h"
 #include "Protocols/ReplicatedInput.hpp"
 #include "Protocols/SemiInput.hpp"
 

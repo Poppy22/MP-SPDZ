@@ -89,6 +89,8 @@ public:
   bool any_more(const DataPositions& other) const;
 
   long long total_edabits(int n_bits) const;
+
+  long long triples_for_matmul();
 };
 
 template<class sint, class sgf2n> class Processor;
@@ -192,6 +194,8 @@ public:
   virtual void buffer_inverses() {}
 
   virtual Preprocessing<typename T::part_type>& get_part() { throw runtime_error("no part"); }
+
+  virtual int minimum_batch() { return 0; }
 };
 
 template<class T>

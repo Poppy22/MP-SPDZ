@@ -3,10 +3,10 @@
  *
  */
 
-#include "Machines/ShamirMachine.h"
+#include "Protocols/ShamirOptions.h"
 #include "Protocols/ShamirShare.h"
 
-#include "ShamirMachine.hpp"
+#include "Shamir.hpp"
 
 int main(int argc, const char** argv)
 {

@@ -19,11 +19,17 @@ template<class T> class Input;
 template<class T> class SemiMC;
 template<class T> class DirectSemiMC;
 template<class T> class Semi;
+template<class T> class Hemi;
 template<class T> class SemiPrep;
 template<class T> class SemiInput;
 template<class T> class PrivateOutput;
 template<class T> class SemiMultiplier;
 template<class T> class OTTripleGenerator;
+template<class T> class DummyMatrixPrep;
+
+template<class T>
+using MaybeHemi = typename conditional<T::clear::characteristic_two,
+        typename T::BasicProtocol, Hemi<T>>::type;
 
 namespace GC
 {
@@ -50,6 +56,7 @@ template<class T>
 class SemiShare : public T, public ShareInterface
 {
     typedef T super;
+    typedef SemiShare This;
 
 public:
     typedef T open_type;
@@ -60,9 +67,11 @@ public:
     typedef DirectSemiMC<SemiShare> Direct_MC;
     typedef SemiInput<SemiShare> Input;
     typedef ::PrivateOutput<SemiShare> PrivateOutput;
-    typedef Semi<SemiShare> Protocol;
+    typedef Semi<SemiShare> BasicProtocol;
     typedef SemiPrep<SemiShare> LivePrep;
     typedef LivePrep TriplePrep;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     typedef SemiShare<typename T::next> prep_type;
     typedef SemiMultiplier<SemiShare> Multiplier;
@@ -91,7 +100,10 @@ public:
     static SemiShare constant(const open_type& other, int my_num,
             mac_key_type = {}, int = -1)
     {
-        return SemiShare(other, my_num);
+        if (my_num == 0)
+            return other;
+        else
+            return {};
     }
 
     SemiShare()
@@ -100,11 +112,6 @@ public:
     template<class U>
     SemiShare(const U& other) : T(other)
     {
-    }
-    SemiShare(const open_type& other, int my_num, const T& alphai = {})
-    {
-        (void) alphai;
-        Protocol::assign(*this, other, my_num);
     }
 
     void assign(const char* buffer)

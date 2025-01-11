@@ -54,6 +54,22 @@ public:
     {
     }
 
+    template<class U>
+    RepShare operator*(const U& other) const
+    {
+        This res = *this;
+        res *= other;
+        return res;
+    }
+
+    template<class U>
+    RepShare operator*=(const U& other)
+    {
+        for (int i = 0; i < L; i++)
+            (*this)[i] *= other;
+        return *this;
+    }
+
     void pack(octetStream& os, T) const
     {
         pack(os, false);
@@ -124,7 +140,7 @@ public:
     const static bool needs_ot = false;
     const static bool dishonest_majority = false;
     const static bool expensive = false;
-    const static bool variable_players = false;
+    static false_type variable_players;
     static const bool has_trunc_pr = true;
     static const bool malicious = false;
 
@@ -174,5 +190,8 @@ public:
         return a.lazy_add(b);
     }
 };
+
+template<class T>
+false_type Rep3Share<T>::variable_players;
 
 #endif /* PROTOCOLS_REP3SHARE_H_ */

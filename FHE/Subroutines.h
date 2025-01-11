@@ -1,5 +1,5 @@
-#ifndef _Subroutines
-#define _Subroutines
+#ifndef FHE_SUBROUTINES_H_
+#define FHE_SUBROUTINES_H_
 
 
 #include "Math/Zp_Data.h"

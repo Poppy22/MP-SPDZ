@@ -389,7 +389,10 @@ void Processor<sint, sgf2n>::read_socket_private(int client_id,
 // file_pos_register is written with new file position (-1 is eof).
 // Tolerent to no file if no shares yet persisted.
 template<class sint, class sgf2n>
-void Processor<sint, sgf2n>::read_shares_from_file(int start_file_posn, int end_file_pos_register, const vector<int>& data_registers) {
+void Processor<sint, sgf2n>::read_shares_from_file(long start_file_posn,
+    int end_file_pos_register, const vector<int>& data_registers,
+    size_t vector_size)
+{
   if (not sint::real_shares(P))
     return;
 
@@ -398,22 +401,24 @@ void Processor<sint, sgf2n>::read_shares_from_file(int start_file_posn, int end_
 
   unsigned int size = data_registers.size();
 
-  vector< sint > outbuf(size);
+  PointerVector<sint> outbuf(size * vector_size);
 
-  int end_file_posn = start_file_posn;
+  auto end_file_posn = start_file_posn;
 
   try {
     binary_file_io.read_from_file(filename, outbuf, start_file_posn, end_file_posn);
 
     for (unsigned int i = 0; i < size; i++)
     {
-      get_Sp_ref(data_registers[i]) = outbuf[i];
+      for (size_t j = 0; j < vector_size; j++)
+        get_Sp_ref(data_registers[i] + j) = outbuf.next();
     }
 
     write_Ci(end_file_pos_register, (long)end_file_posn);    
   }
   catch (file_missing& e) {
-    cerr << "Got file missing error, will return -2. " << e.what() << endl;
+    if (OnlineOptions::singleton.has_option("verbose_persistence"))
+      cerr << "Got file missing error, will return -2. " << e.what() << endl;
     write_Ci(end_file_pos_register, (long)-2);
   }
 }
@@ -421,7 +426,7 @@ void Processor<sint, sgf2n>::read_shares_from_file(int start_file_posn, int end_
 // Append share data in data_registers to end of file. Expects Persistence directory to exist.
 template<class sint, class sgf2n>
 void Processor<sint, sgf2n>::write_shares_to_file(long start_pos,
-    const vector<int>& data_registers)
+    const vector<int>& data_registers, size_t vector_size)
 {
   if (not sint::real_shares(P))
     return;
@@ -430,14 +435,22 @@ void Processor<sint, sgf2n>::write_shares_to_file(long start_pos,
 
   unsigned int size = data_registers.size();
 
-  vector< sint > inpbuf (size);
+  PointerVector<sint> inpbuf(size * vector_size);
 
   for (unsigned int i = 0; i < size; i++)
   {
-    inpbuf[i] = get_Sp_ref(data_registers[i]);
+    for (size_t j = 0; j < vector_size; j++)
+      inpbuf.next() = get_Sp_ref(data_registers[i] + j);
   }
 
   binary_file_io.write_to_file(filename, inpbuf, start_pos);
+}
+
+template<class T>
+void SubProcessor<T>::maybe_check()
+{
+  if (OnlineOptions::singleton.has_option("always_check"))
+    check();
 }
 
 template <class T>
@@ -465,6 +478,8 @@ void SubProcessor<T>::POpen(const Instruction& inst)
       Proc->sent += sz * size;
       Proc->rounds++;
     }
+
+  maybe_check();
 }
 
 template<class T>
@@ -489,8 +504,10 @@ void SubProcessor<T>::muls(const vector<int>& reg)
         {
             proc.S[reg[4 * i + 1] + j] = protocol.finalize_mul();
         }
-        protocol.counter += n * reg[4 * i];
+        protocol.counter += reg[4 * i];
     }
+
+    maybe_check();
 }
 
 template<class T>
@@ -517,6 +534,8 @@ void SubProcessor<T>::mulrs(const vector<int>& reg)
         }
         protocol.counter += reg[4 * i];
     }
+
+    maybe_check();
 }
 
 template<class T>
@@ -550,6 +569,8 @@ void SubProcessor<T>::dotprods(const vector<int>& reg, int size)
             it = next;
         }
     }
+
+    maybe_check();
 }
 
 template<class T>
@@ -590,6 +611,8 @@ void SubProcessor<T>::matmuls(const StackedVector<T>& source,
             for (int j = 0; j < dim[2]; j++)
                 *(C + i * dim[2] + j) = protocol.finalize_dotprod(dim[1]);
     }
+
+    maybe_check();
 }
 
 
@@ -664,6 +687,8 @@ void SubProcessor<T>::matmulsm(const MemoryPart<T>& source,
     auto lastMatrixColumns = lastMatmulsArgs[5];
     matmulsm_finalize_batch(batchStartMatrix, batchStartI, batchStartJ,
                         lastMatmulsArgs, lastMatrixRows - 1, lastMatrixColumns - 1);
+
+    maybe_check();
 }
 
 template<class T>
@@ -771,6 +796,8 @@ void SubProcessor<T>::conv2ds(const Instruction& instruction)
         for (; done < i; done++)
             tuples[done].post(S, protocol);
     }
+
+    maybe_check();
 }
 
 inline
@@ -869,6 +896,8 @@ void SubProcessor<T>::secure_shuffle(const Instruction& instruction)
     typename T::Protocol::Shuffler(S, instruction.get_size(),
             instruction.get_n(), instruction.get_r(0), instruction.get_r(1),
             *this);
+
+    maybe_check();
 }
 
 template<class T>
@@ -879,19 +908,36 @@ size_t SubProcessor<T>::generate_secure_shuffle(const Instruction& instruction,
 }
 
 template<class T>
-void SubProcessor<T>::apply_shuffle(const Instruction& instruction, int handle,
-    ShuffleStore& shuffle_store)
+void SubProcessor<T>::apply_shuffle(const Instruction& instruction,
+                                    ShuffleStore& shuffle_store)
 {
-    shuffler.apply(S, instruction.get_size(), instruction.get_start()[2],
-            instruction.get_start()[0], instruction.get_start()[1],
-            shuffle_store.get(handle),
-            instruction.get_start()[4]);
+    const auto& args = instruction.get_start();
+
+    const auto n_shuffles = args.size() / 6;
+    vector<size_t> sizes(n_shuffles, 0);
+    vector<size_t> destinations(n_shuffles, 0);
+    vector<size_t> sources(n_shuffles, 0);
+    vector<size_t> unit_sizes(n_shuffles, 0);
+    vector<size_t> shuffles(n_shuffles, 0);
+    vector<bool> reverse(n_shuffles, false);
+    for (size_t i = 0; i < n_shuffles; i++) {
+        sizes[i] = args[6 * i];
+        destinations[i] = args[6 * i + 1];
+        sources[i] = args[6 * i + 2];
+        unit_sizes[i] = args[6 * i + 3];
+        shuffles[i] = Proc->read_Ci(args[6 * i + 4]);
+        reverse[i] = args[6 * i + 5];
+    }
+    shuffler.apply_multiple(S, sizes, destinations, sources, unit_sizes, shuffles, reverse, shuffle_store);
+
+    maybe_check();
 }
 
 template<class T>
 void SubProcessor<T>::inverse_permutation(const Instruction& instruction) {
     shuffler.inverse_permutation(S, instruction.get_size(), instruction.get_start()[0],
                                  instruction.get_start()[1]);
+    maybe_check();
 }
 
 template<class T>

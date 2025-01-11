@@ -12,6 +12,8 @@ using namespace std;
 
 #include "OnlineOptions.h"
 
+void trunc_pr_check(int k, int m, int n_bits);
+
 template<class T>
 class TruncPrTuple
 {
@@ -36,6 +38,7 @@ public:
         k = *it++;
         m = *it++;
         n_shift = T::N_BITS - 1 - k;
+        trunc_pr_check(k, m, T::n_bits());
         assert(m < k);
         assert(0 < k);
         assert(m < T::n_bits());

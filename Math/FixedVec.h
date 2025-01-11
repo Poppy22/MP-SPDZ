@@ -63,25 +63,25 @@ public:
         return res;
     }
 
-    FixedVec<T, L>(const T& other = {})
+    FixedVec(const T& other = {})
     {
         for (auto& x : v)
             x = other;
     }
 
-    FixedVec<T, L>(long other) :
-            FixedVec<T, L>(T(other))
+    FixedVec(long other) :
+            FixedVec(T(other))
     {
     }
 
     template<class U>
-    FixedVec<T, L>(const FixedVec<U, L>& other)
+    FixedVec(const FixedVec<U, L>& other)
     {
         for (int i = 0; i < L; i++)
             v[i] = other[i];
     }
 
-    FixedVec<T, L>(const array<T, L>& other)
+    FixedVec(const array<T, L>& other)
     {
         v = other;
     }

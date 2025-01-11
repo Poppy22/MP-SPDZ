@@ -266,7 +266,7 @@ void Rep4<T>::exchange()
 template<class T>
 T Rep4<T>::finalize_mul(int n_bits)
 {
-    this->counter++;
+    this->add_mul(n_bits);
     if (n_bits == -1)
         return results.next().res;
     else

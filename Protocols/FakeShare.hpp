@@ -19,32 +19,24 @@ void FakeShare<T>::split(StackedVector<bit_type>& dest,
         int start = k * unit;
         int m = min(unit, n_inputs - start);
 
-        switch (regs.size() / n_bits)
+        int n_split = regs.size() / n_bits;
+        for (int i = 0; i < n_bits; i++)
+            for (int j = 1; j < n_split; j++)
+                dest.at(regs.at(n_split * i + j) + k) = {};
+
+        square64 square;
+
+        for (int j = 0; j < m; j++)
         {
-        case 3:
-        {
-            for (int i = 0; i < n_bits; i++)
-                for (int j = 1; j < 3; j++)
-                    dest.at(regs.at(3 * i + j) + k) = {};
-
-            square64 square;
-
-            for (int j = 0; j < m; j++)
-            {
-                square.rows[j] = (source[j + start]).get_limb(0);
-            }
-
-            square.transpose(m, n_bits);
-
-            for (int j = 0; j < n_bits; j++)
-            {
-                auto& dest_reg = dest.at(regs.at(3 * j) + k);
-                dest_reg = square.rows[j];
-            }
-            break;
+            square.rows[j] = (source[j + start]).get_limb(0);
         }
-        default:
-            not_implemented();
+
+        square.transpose(m, n_bits);
+
+        for (int j = 0; j < n_bits; j++)
+        {
+            auto& dest_reg = dest.at(regs.at(n_split * j) + k);
+            dest_reg = square.rows[j];
         }
     }
 }

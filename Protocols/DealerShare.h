@@ -8,6 +8,9 @@
 
 #include "Math/Z2k.h"
 #include "SemiShare.h"
+#include "DealerMC.h"
+#include "Dealer.h"
+#include "DealerInput.h"
 
 template<class T> class DealerPrep;
 template<class T> class DealerInput;

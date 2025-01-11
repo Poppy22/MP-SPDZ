@@ -378,6 +378,8 @@ public:
 
   // Returns the maximal register used
   unsigned get_max_reg(int reg_type) const;
+
+  string get_name() const;
 };
 
 class DataPositions;

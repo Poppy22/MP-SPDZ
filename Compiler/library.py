@@ -402,7 +402,8 @@ class FunctionCallTape(FunctionTape):
     def __init__(self, *args, **kwargs):
         super(FunctionTape, self).__init__(*args, **kwargs)
         self.instances = {}
-    def __call__(self, *args, **kwargs):
+    @staticmethod
+    def get_key(args, kwargs):
         key = (get_program(),)
         def process_for_key(arg):
             nonlocal key
@@ -419,6 +420,9 @@ class FunctionCallTape(FunctionTape):
         for name, arg in sorted(kwargs.items()):
             key += (name, 'kw')
             process_for_key(arg)
+        return key
+    def __call__(self, *args, **kwargs):
+        key = self.get_key(args, kwargs)
         if key not in self.instances:
             my_args = []
             def wrapped_function():
@@ -501,6 +505,60 @@ class FunctionCallTape(FunctionTape):
                   *call_args)
         break_point('call-%s' % self.name)
         return untuplify(tuple(out_result))
+
+class ExportFunction(FunctionCallTape):
+    def __init__(self, function):
+        super(ExportFunction, self).__init__(function)
+        self.done = set()
+    def __call__(self, *args, **kwargs):
+        if kwargs:
+            raise CompilerError('keyword arguments not supported')
+        def arg_signature(arg):
+            if isinstance(arg, types._structure):
+                return '%s:%d' % (arg.arg_type(), arg.size)
+            elif isinstance(arg, types._vectorizable):
+                from .GC.types import sbitvec
+                if issubclass(arg.value_type, sbitvec):
+                    return 'sbv:[%dx%d]' % (arg.total_size(),
+                                            arg.value_type.n_bits)
+                else:
+                    return '%s:[%d]' % (arg.value_type.arg_type(),
+                                        arg.total_size())
+            else:
+                raise CompilerError('argument not supported: %s' % arg)
+        signature = []
+        for arg in args:
+            signature.append(arg_signature(arg))
+        signature = tuple(signature)
+        key = self.get_key(args, kwargs)
+        if key in self.instances and signature not in self.done:
+            raise CompilerError('signature conflict')
+        super(ExportFunction, self).__call__(*args, **kwargs)
+        if signature not in self.done:
+            filename = '%s/%s/%s-%s' % (get_program().programs_dir, 'Functions',
+                                        self.name, '-'.join(signature))
+            print('Writing to', filename)
+            out = open(filename, 'w')
+            print(get_program().name, file=out)
+            print(self.instances[key][0], file=out)
+            result = self.instances[key][1]
+            try:
+                if result is not None:
+                    result = untuplify(result)
+                    print(arg_signature(result), result.i, file=out)
+                else:
+                    print('- 0', file=out)
+            except CompilerError:
+                raise CompilerError('return type not supported: %s' % result)
+            for arg in self.instances[key][2]:
+                if isinstance(arg, types._structure):
+                    print(arg.i, end=' ', file=out)
+                elif isinstance(arg, types._vectorizable):
+                    print(arg.address, end=' ', file=out)
+                else:
+                    CompilerError('argument not supported: %s', arg)
+            print(file=out)
+            self.done.add(signature)
 
 def function_tape(function):
     return FunctionTape(function)
@@ -588,6 +646,9 @@ def function(function):
 
     """
     return FunctionCallTape(function)
+
+def export(function):
+    return ExportFunction(function)
 
 def memorize(x, write=True):
     if isinstance(x, (tuple, list)):
@@ -898,8 +959,10 @@ def for_range(start, stop=None, step=None):
 
     """
     def decorator(loop_body):
+        get_tape().unused_decorators.pop(decorator)
         range_loop(loop_body, start, stop, step)
         return loop_body
+    get_tape().unused_decorators[decorator] = 'for_range'
     return decorator
 
 def for_range_parallel(n_parallel, n_loops):
@@ -948,7 +1011,7 @@ def for_range_opt(start, stop=None, step=None, budget=None):
     :param start/stop/step: int/regint/cint (used as in :py:func:`range`)
       or :py:obj:`start` only as list/tuple of int (see below)
     :param budget: number of instructions after which to start optimization
-      (default is 100,000)
+      (default is 1000 or as given with ``--budget``)
 
     Example:
 
@@ -1097,10 +1160,16 @@ def map_reduce_single(n_parallel, n_loops, initializer=lambda *x: [],
             for j in range(loop_rounds * my_n_parallel, n_loops):
                 state = reducer(tuplify(loop_body(j)), state)
         else:
-            @for_range(loop_rounds * my_n_parallel, n_loops)
-            def f(j):
-                r = reducer(tuplify(loop_body(j)), mem_state)
-                write_state_to_memory(r)
+            done = regint(loop_rounds * my_n_parallel)
+            for i in range(int(math.log(my_n_parallel, 2)), -1, -1):
+                N = 2 ** i
+                @if_(n_loops - done >= N)
+                def _():
+                    state = tuplify(initializer())
+                    for j in range(N):
+                        state = reducer(tuplify(loop_body(done + j)), state)
+                    write_state_to_memory(reducer(mem_state, state))
+                    done.iadd(N)
             state = mem_state
         if use_array and len(state) and \
            isinstance(types._register, types._vectorizable):
@@ -1487,7 +1556,7 @@ def while_do(condition, *args):
         return loop_body
     return decorator
 
-def _run_and_link(function, g=None, lock_lists=True):
+def _run_and_link(function, g=None, lock_lists=True, allow_return=False):
     if g is None:
         g = function.__globals__
         if lock_lists:
@@ -1504,6 +1573,9 @@ def _run_and_link(function, g=None, lock_lists=True):
                     g[x] = A(g[x])
     pre = copy.copy(g)
     res = function()
+    if res is not None and not allow_return:
+        raise CompilerError('Conditional blocks cannot return values. '
+                            'Use if_else instead: https://mp-spdz.readthedocs.io/en/latest/Compiler.html#Compiler.types.regint.if_else')
     _link(pre, g)
     return res
 
@@ -1536,7 +1608,7 @@ def do_while(loop_fn, g=None):
                               name='begin-loop')
     get_tape().loop_breaks.append([])
     loop_block = instructions.program.curr_block
-    condition = _run_and_link(loop_fn, g)
+    condition = _run_and_link(loop_fn, g, allow_return=True)
     if callable(condition):
         condition = condition()
     branch = instructions.jmpnz(regint.conv(condition), 0, add_to_prog=False)
@@ -1558,7 +1630,9 @@ def if_then(condition):
         condition = condition()
     try:
         if not condition.is_clear:
-            raise CompilerError('cannot branch on secret values')
+            raise CompilerError(
+                'cannot branch on secret values, use if_else instead: '
+                'https://mp-spdz.readthedocs.io/en/latest/Compiler.html#Compiler.types.sint.if_else')
     except AttributeError:
         pass
     state.condition = regint.conv(condition)

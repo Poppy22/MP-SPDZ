@@ -158,11 +158,7 @@ class Processor_Error: public exception
           return msg.c_str();
         }
     };
-class Invalid_Instruction : public Processor_Error
-    {
-      public:
-      Invalid_Instruction(string m) : Processor_Error(m) {}
-    };
+
 class max_mod_sz_too_small : public exception
     {
       string msg;
@@ -193,9 +189,9 @@ public:
 };
 class needs_cleaning : public exception {};
 
-class closed_connection
+class closed_connection : public exception
 {
-    const char* what() const
+    const char* what() const throw()
     {
         return "connection closed down";
     }
@@ -210,9 +206,9 @@ public:
     }
 };
 
-class ran_out
+class ran_out : public exception
 {
-    const char* what() const
+    const char* what() const throw()
     {
         return "insufficient preprocessing";
     }
@@ -303,5 +299,19 @@ class insufficient_shares : public runtime_error
 public:
     insufficient_shares(int expected, int actual, exception& e);
 };
+
+class persistence_error : public runtime_error
+{
+public:
+    persistence_error(const string& error);
+};
+
+class bytecode_error : public runtime_error
+{
+public:
+    bytecode_error(const string& error);
+};
+
+typedef bytecode_error Invalid_Instruction;
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "Replicated.h"
 
+#include "Tools/Bundle.h"
+
 /**
  * ATLAS protocol (simple version).
  * Uses double sharings to reduce degree of Shamir secret sharing.

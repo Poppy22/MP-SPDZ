@@ -117,7 +117,7 @@ computation:
    Set the budget for loop unrolling with
    :py:func:`~Compiler.library.for_range_opt` and similar. This means
    that loops are unrolled up to *budget* instructions. Default is
-   100,000 instructions.
+   1000 instructions.
 
 .. cmdoption:: -C
 	       --CISC

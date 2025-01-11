@@ -41,7 +41,9 @@ secret_input = sfix.input_tensor_via(
 
 layers = ml.layers_from_torch(model, secret_input.shape, 1, input_via=0)
 
-optimizer = ml.Optimizer(layers)
+optimizer = ml.Optimizer(layers, time_layers='time_layers' in program.args)
 
+start_timer(1)
 print_ln('Secure computation says %s',
          optimizer.eval(secret_input, top=True)[0].reveal())
+stop_timer(1)

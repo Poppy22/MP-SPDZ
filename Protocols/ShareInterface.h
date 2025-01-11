@@ -35,6 +35,8 @@ public:
     typedef GC::NoShare mac_type;
     typedef GC::NoShare mac_share_type;
 
+    typedef void DefaultMC;
+
     static const bool needs_ot = false;
     static const bool expensive = false;
     static const bool expensive_triples = false;

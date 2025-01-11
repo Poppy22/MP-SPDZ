@@ -21,3 +21,13 @@ test(a, 10000, 10000)
 test(b, 10000, 20000)
 test(a, 1000000, 1000000)
 test(b, 1000000, 2000000)
+
+a = 1
+if True:
+    if True:
+        a = 2
+    if True:
+        a = 3
+else:
+    a = 4
+    crash()

@@ -26,6 +26,8 @@ If you're new to MP-SPDZ, consider the following:
    optimization
    instructions
    low-level
+   function-export
+   navigating-c++
    ml-quickstart
    machine-learning
    networking

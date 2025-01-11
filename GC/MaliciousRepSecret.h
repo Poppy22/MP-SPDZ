@@ -62,6 +62,7 @@ public:
 
     typedef MaliciousRepMC<U> MC;
     typedef MC MAC_Check;
+    typedef HashMaliciousRepMC<U> DefaultMC;
 
     typedef ReplicatedInput<U> Input;
     typedef RepPrep<U> LivePrep;

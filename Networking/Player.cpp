@@ -80,11 +80,14 @@ void Names::init(int player, int pnb, const string& filename, int nplayers_wante
   }
   if (nplayers_wanted > 0 and nplayers_wanted != nplayers)
     exit_error("not enough hosts in " + filename);
-#ifdef DEBUG_NETWORKING
-  cerr << "Got list of " << nplayers << " players from file: " << endl;
-  for (unsigned int i = 0; i < names.size(); i++)
-    cerr << "    " << names[i] << ":" << ports[i] << endl;
-#endif
+
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    {
+      cerr << "Got list of " << nplayers << " players from file: " << endl;
+      for (unsigned int i = 0; i < names.size(); i++)
+        cerr << "    " << names[i] << ":" << ports[i] << endl;
+    }
+
   setup_server();
 }
 
@@ -140,9 +143,9 @@ void Names::setup_names(const char *servername, int my_port)
   }
 
   octetStream("P" + to_string(player_no)).Send(socket_num);
-#ifdef DEBUG_NETWORKING
-  cerr << "Sent " << player_no << " to " << servername << ":" << pn << endl;
-#endif
+
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    cerr << "Sent " << player_no << " to " << servername << ":" << pn << endl;
 
   // Send my name
   sockaddr_in address;
@@ -151,10 +154,12 @@ void Names::setup_names(const char *servername, int my_port)
   char* my_name = inet_ntoa(address.sin_addr);
   octetStream(my_name).Send(socket_num);
   send(socket_num,(octet*)&my_port,4);
-#ifdef DEBUG_NETWORKING
-  fprintf(stderr, "My Name = %s\n",my_name);
-  cerr << "My number = " << player_no << endl;
-#endif
+
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    {
+      fprintf(stderr, "My Name = %s\n",my_name);
+      cerr << "My number = " << player_no << endl;
+    }
 
   // Now get the set of names
   try
@@ -172,10 +177,12 @@ void Names::setup_names(const char *servername, int my_port)
   if (names.size() != ports.size())
     exit_error("invalid network setup");
   nplayers = names.size();
-#ifdef VERBOSE
-  for (int i = 0; i < nplayers; i++)
-    cerr << "Player " << i << " is running on machine " << names[i] << endl;
-#endif
+
+
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    for (int i = 0; i < nplayers; i++)
+      cerr << "Player " << i << " is running on machine " << names[i] << endl;
+
   close_client_socket(socket_num);
 }
 
@@ -640,8 +647,8 @@ ThreadPlayer::ThreadPlayer(const Names& Nms, const string& id_base) :
 {
   for (int i = 0; i < Nms.num_players(); i++)
     {
-      receivers.push_back(new Receiver<int>(sockets[i]));
-      senders.push_back(new Sender<int>(socket_to_send(i)));
+      receivers.push_back(new Receiver<int>(sockets[i], i));
+      senders.push_back(new Sender<int>(socket_to_send(i), i));
     }
 }
 
@@ -846,9 +853,14 @@ Timer& CommStatsWithName::add_length_only(size_t length)
 
 Timer& CommStatsWithName::add(const octetStream& os)
 {
+  return add(os.get_length());
+}
+
+Timer& CommStatsWithName::add(size_t length)
+{
   if (OnlineOptions::singleton.has_option("verbose_comm"))
-    fprintf(stderr, "%s %zu bytes\n", name.c_str(), os.get_length());
-  return stats.add(os);
+    fprintf(stderr, "%s %zu bytes\n", name.c_str(), length);
+  return stats.add(length);
 }
 
 void Player::reset_stats()

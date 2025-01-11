@@ -17,7 +17,8 @@ void* Sender<T>::run_thread(void* sender)
 }
 
 template<class T>
-Sender<T>::Sender(T socket) : socket(socket), thread(0)
+Sender<T>::Sender(T socket, int other) :
+        CommunicationThread(other), socket(socket), thread(0)
 {
     start();
 }
@@ -42,7 +43,7 @@ void Sender<T>::stop()
 }
 
 template<class T>
-void Sender<T>::run()
+void Sender<T>::run_with_error()
 {
     const octetStream* os = 0;
     while (in.pop(os))

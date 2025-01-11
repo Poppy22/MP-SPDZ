@@ -65,6 +65,8 @@ public:
 
     typedef typename T::out_type out_type;
 
+    typedef void DefaultMC;
+
     static string type_string() { return "evaluation secret"; }
     static string phase_name() { return T::name(); }
 
@@ -179,6 +181,7 @@ public:
     void finalize_input(U& inputter, int from, int n_bits);
 
     int size() const { return registers.size(); }
+    size_t maximum_size() const { return registers.size(); }
     RegVector& get_regs() { return registers; }
     const RegVector& get_regs() const { return registers; }
 

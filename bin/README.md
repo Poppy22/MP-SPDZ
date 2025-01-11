@@ -1,5 +1,5 @@
 In binary releases, this directory constains statically linked
-binaries. They included code from the following projects, whose licenses
+binaries. They include code from the following projects, whose licenses
 are thus provided in separate files:
 - Boost
 - glibc
@@ -7,6 +7,12 @@ are thus provided in separate files:
 - GMP
 - OpenSSl
 - NTL
+- SimpleOT
+- SimplestOT_C
+- libOTe
+- cryptoTools
+- simde
+- sse2neon
 
 The binaries also include code from libstdc++ and libgcc. They have
 been produced using `Scripts/build.sh` and standard GCC from

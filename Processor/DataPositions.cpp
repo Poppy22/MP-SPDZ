@@ -137,13 +137,16 @@ void DataPositions::print_cost() const
     cerr << "  edaBits" << endl;
   for (auto it = edabits.begin(); it != edabits.end(); it++)
     {
-      if (print_verbose)
-        cerr << setw(13) << "";
-      cerr << "    " << setw(10) << it->second << " of length "
-          << it->first.second;
-      if (it->first.first)
-        cerr << " (strict)";
-      cerr << endl;
+      if (it->second)
+        {
+          if (print_verbose)
+              cerr << setw(13) << "";
+          cerr << "    " << setw(10) << it->second << " of length "
+                  << it->first.second;
+          if (it->first.first)
+              cerr << " (strict)";
+          cerr << endl;
+        }
     }
 }
 
@@ -234,4 +237,15 @@ long long DataPositions::total_edabits(int n_bits) const
 {
   auto usage = edabits;
   return usage[{false, n_bits}] + usage[{true, n_bits}];
+}
+
+long long DataPositions::triples_for_matmul()
+{
+  long long res = 0;
+  for (auto& x : matmuls)
+    {
+      auto dim = x.first;
+      res += x.second * dim[0] * dim[1] * dim[2];
+    }
+  return res;
 }

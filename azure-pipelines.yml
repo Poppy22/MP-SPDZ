@@ -8,11 +8,11 @@ trigger:
 - to-publish
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-24.04'
 
 steps:
   - script: |
-      bash -c "sudo apt-get update && sudo apt-get install libsodium-dev libntl-dev python3-gmpy2 python3-networkx"
+      bash -c "sudo apt-get update && sudo apt-get install libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libsodium-dev libntl-dev python3-gmpy2 python3-networkx"
   - script: |
       make setup
   - script:
@@ -26,8 +26,8 @@ steps:
   - script:
       echo CXX = clang++ >> CONFIG.mine
   - script:
-      make arithmetic rep-bin yao
+      make replicated-{ring,field}-party.x rep4-ring-party.x shamir mascot-party.x sy spdz2k-party.x semi-he yao semi2k-party.x semi-party.x dealer-ring-party.x cowgear-party.x chaigear-party.x
   - script:
       Scripts/setup-ssl.sh 4
   - script:
-      skip_binary=1 Scripts/test_tutorial.sh -X
+      skip_binary=1 slim=1 Scripts/test_tutorial.sh -X

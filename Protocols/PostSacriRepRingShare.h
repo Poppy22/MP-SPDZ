@@ -32,13 +32,15 @@ public:
     typedef Z2<S> random_type;
     typedef MalRepRingShare<K + 2, S> SquareToBitShare;
 
-    typedef PostSacrifice<PostSacriRepRingShare> Protocol;
+    typedef PostSacrifice<PostSacriRepRingShare> BasicProtocol;
     typedef HashMaliciousRepMC<PostSacriRepRingShare> MAC_Check;
     typedef MAC_Check Direct_MC;
     typedef ReplicatedInput<PostSacriRepRingShare> Input;
     typedef ReplicatedPO<This> PO;
     typedef SpecificPrivateOutput<This> PrivateOutput;
     typedef MalRepRingPrepWithBits<PostSacriRepRingShare> LivePrep;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     typedef GC::MaliciousRepSecret bit_type;
 

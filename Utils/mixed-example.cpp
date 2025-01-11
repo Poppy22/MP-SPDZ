@@ -3,14 +3,7 @@
  *
  */
 
-#include "Protocols/ProtocolSet.h"
-
-#include "Machines/SPDZ.hpp"
-#include "Machines/SPDZ2k.hpp"
-#include "Machines/Semi2k.hpp"
-#include "Machines/Rep.hpp"
-#include "Machines/Rep4.hpp"
-#include "Machines/Atlas.hpp"
+#include "Machines/maximal.hpp"
 
 template<class T>
 void run(char** argv);

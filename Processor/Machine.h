@@ -15,19 +15,24 @@
 #include "Processor/ThreadJob.h"
 #include "Processor/ExternalClients.h"
 
+#include "Processor/FunctionArgument.h"
+
 #include "GC/Machine.h"
 
 #include "Tools/time-func.h"
 #include "Tools/ExecutionStats.h"
 
 #include "Protocols/SecureShuffle.h"
+#include "Protocols/NoShare.h"
 
 #include <vector>
 #include <map>
 #include <atomic>
 using namespace std;
 
-template<class sint, class sgf2n>
+#include "OnlineOptions.hpp"
+
+template<class sint, class sgf2n = NoShare<gf2n>>
 class Machine : public BaseMachine
 {
   /* The mutex's lock the C-threads and then only release
@@ -101,6 +106,9 @@ class Machine : public BaseMachine
   void run_step(const string& progname);
   pair<DataPositions, NamedCommStats> stop_threads();
 
+  void run_function(const string& name, FunctionArgument& result,
+      vector<FunctionArgument>& arguments);
+
   string memory_filename();
 
   template<class T>
@@ -109,8 +117,9 @@ class Machine : public BaseMachine
   void reqbl(int n);
   void active(int n);
 
-  typename sint::bit_type::mac_key_type get_bit_mac_key() { return alphabi; }
-  typename sint::mac_key_type get_sint_mac_key() { return alphapi; }
+  typename sint::bit_type::mac_key_type get_bit_mac_key() const
+  { return alphabi; }
+  typename sint::mac_key_type get_sint_mac_key() const { return alphapi; }
 
   Player& get_player() { return *P; }
 

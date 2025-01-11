@@ -110,7 +110,11 @@ void Tree_MAC_Check<U>::exchange(const Player& P)
   this->values_opened += this->values.size();
 
   popen_cnt += this->values.size();
-  CheckIfNeeded(P);
+
+  if (OnlineOptions::singleton.has_option("always_check"))
+    Check(P);
+  else
+    CheckIfNeeded(P);
 }
 
 

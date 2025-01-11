@@ -4,6 +4,7 @@
  */
 
 #include "Protocols/SohoShare.h"
+#include "Protocols/SPDZ.h"
 #include "Math/gfp.h"
 #include "Math/gf2n.h"
 #include "FHE/P2Data.h"

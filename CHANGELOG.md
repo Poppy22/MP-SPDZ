@@ -1,5 +1,14 @@
 The changelog explains changes pulled through from the private development repository. Bug fixes and small enhancements are committed between releases and not documented here.
 
+## 0.4.0 (November 21, 2024)
+
+- Functionality to call high-level code from C++
+- Matrix triples from file for all appropriate protocols
+- Exit with message on errors instead of uncaught exceptions
+- Reduce memory usage for binary memory
+- Optimized cint-regint conversion in Dealer protocol
+- Fixed security bug: missing MAC check in probabilistic truncation
+
 ## 0.3.9 (July 9, 2024)
 
 - Inference with non-sequential PyTorch networks

@@ -9,6 +9,11 @@ secret index::
     i = sint.get_input_from(0)
     a[i] = sint.get_input_from(1)
 
+`The introductory book by Evans et
+al. <https://securecomputation.org>`_ contains `a chapter dedicated to
+oblivious RAM
+<https://securecomputation.org/docs/ch5-obliviousdata.pdf>`_.
+
 """
 
 import random
@@ -41,6 +46,7 @@ debug_online = False
 crash_on_overflow = False
 use_insecure_randomness = False
 debug_ram_size = False
+single_thread = False
 
 def maybe_start_timer(n):
     if detailed_timing:
@@ -844,7 +850,7 @@ class TrivialORAM(RefTrivialORAM, AbstractORAM):
             start_timer()
 
 def get_n_threads(n_loops):
-    if n_threads is None:
+    if n_threads is None and not single_thread:
         if n_loops > 2048:
             return 8
         else:
@@ -1038,7 +1044,7 @@ class LocalIndexStructure(List):
     __getitem__ = lambda self,index: List.__getitem__(self, index)[0]
 
 def get_n_threads_for_tree(size):
-    if n_threads_for_tree is None:
+    if n_threads_for_tree is None and not single_thread:
         if size >= 2**13:
             return 8
         else:

@@ -56,7 +56,7 @@ parties and malicious security.
 On Linux, this requires a working toolchain and [all
 requirements](#requirements). On Ubuntu, the following might suffice:
 ```
-sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
+sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
 ```
 On MacOS, this requires [brew](https://brew.sh) to be installed,
 which will be used for all dependencies.
@@ -257,11 +257,9 @@ compute the preprocessing time for a particular computation.
 
 #### Requirements
 
- - GCC 7 or later (tested with up to 11) or LLVM/clang 6 or later
+ - GCC 7 or later (tested with up to 14) or LLVM/clang 10 or later
    (tested with up to 19). The default is to use clang because it performs
-   better. clang 9 doesn't support libOTe, so you
-   need to deactivate its use for these compilers (see the next
-   section).
+   better.
  - For protocols using oblivious transfer, libOTe with [the necessary
    patches](https://github.com/mkskeller/softspoken-implementation)
    but without SimplestOT. The easiest way is to run `make libote`,
@@ -565,6 +563,13 @@ python hello_world.mpc <compile args>
 This is particularly useful if want to add new command line arguments specifically for your `.mpc` file. See [test_args.mpc](Programs/Source/test_args.mpc) for more details on this use case.
 
 Note that when using this approach, all objects provided in the high level interface (e.g. sint, print_ln) need to be imported, because the `.mpc` file is interpreted directly by Python (instead of being read by `compile.py`.)
+
+Furthermore, this only covers compilation, so you will need to run execution separately, for example:
+```
+Scripts/mascot.sh hello_world
+```
+
+Also note that programs in the above form are not compatible with `compile.py` and `compile-run.py`.
 
 #### Compiling and running programs from external directories
 
@@ -1126,25 +1131,6 @@ If you run the preprocessing on different hosts, make sure to use the
 same player number in the preprocessing and the online phase.
 
 ## Benchmarking offline phases
-
-#### SPDZ-2 offline phase
-
-This implementation is suitable to generate the preprocessed data used in the online phase.
-You need to compile with `USE_NTL = 1` in `CONFIG.mine` to run this.
-
-For quick run on one machine, you can call the following:
-
-`./spdz2-offline.x -p 0 & ./spdz2-offline.x -p 1`
-
-More generally, run the following on every machine:
-
-`./spdz2-offline.x -p <number of party> -N <total number of parties> -h <hostname of party 0> -c <covert security parameter>`
-
-The number of parties are counted from 0. As seen in the quick example, you can omit the total number of parties if it is 2 and the hostname if all parties run on the same machine. Invoke `./spdz2-offline.x` for more explanation on the options.
-
-`./spdz2-offline.x` provides covert security according to some parameter c (at least 2). A malicious adversary will get caught with probability 1-1/c. There is a linear correlation between c and the running time, that is, running with 2c takes twice as long as running with c. The default for c is 10.
-
-The program will generate every kind of randomness required by the online phase except input tuples until you stop it. You can shut it down gracefully pressing Ctrl-c (or sending the interrupt signal `SIGINT`), but only after an initial phase, the end of which is marked by the output `Starting to produce gf2n`. Note that the initial phase has been reported to take up to an hour. Furthermore, 3 GB of RAM are required per party.
 
 #### Benchmarking the MASCOT or SPDZ2k offline phase
 

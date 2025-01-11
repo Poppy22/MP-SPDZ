@@ -311,22 +311,18 @@ void imatrix::hash(octetStream& o) const
 
 void imatrix::pack(octetStream& o) const
 {
-  o.store(size());
   for (auto& x : *this)
     {
       assert(x.size() == size());
-      x.pack(o);
     }
+  o.store(static_cast<const super&>(*this));
 }
 
 void imatrix::unpack(octetStream& o)
 {
-  size_t size;
-  o.get(size);
-  resize(size);
+  o.get(static_cast<super&>(*this));
   for (auto& x : *this)
     {
-      x.resize(size);
-      x.unpack(o);
+      assert(x.size() == size());
     }
 }

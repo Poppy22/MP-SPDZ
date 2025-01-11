@@ -71,14 +71,14 @@ int default_m(int& lgp, int& idx)
   return m;
 }
 
-bigint generate_prime(int lgp, int m)
+bigint generate_prime(int lgp, int m, bool force_degree)
 {
   bigint p;
-  generate_prime(p, lgp, m);
+  generate_prime(p, lgp, m, force_degree);
   return p;
 }
 
-void generate_prime(bigint& p, int lgp, int m)
+void generate_prime(bigint& p, int lgp, int m, bool force_degree)
 {
   if (OnlineOptions::singleton.prime > 0)
     {
@@ -100,7 +100,8 @@ void generate_prime(bigint& p, int lgp, int m)
     }
 
   int idx;
-  m = max(m, default_m(lgp, idx));
+  if (not force_degree)
+    m = max(m, default_m(lgp, idx));
 
   bigint u;
   int ex;

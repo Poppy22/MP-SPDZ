@@ -25,7 +25,7 @@ public:
     void prepare_open(const T& secret, int n_bits = -1);
     void exchange(const Player& P);
     typename T::open_type finalize_raw();
-    array<typename T::open_type*, 2> finalize_several(int n);
+    array<typename T::open_type*, 2> finalize_several(size_t n);
 
     DealerMC& get_part_MC()
     {

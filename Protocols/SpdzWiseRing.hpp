@@ -5,6 +5,8 @@
 
 #include "SpdzWiseRing.h"
 
+#include "PostSacrifice.hpp"
+
 template<class T>
 SpdzWiseRing<T>::SpdzWiseRing(Player& P) :
         SpdzWise<T>(P), zero_prep(0, zero_usage), zero_proc(zero_output,

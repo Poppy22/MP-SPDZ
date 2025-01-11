@@ -7,6 +7,7 @@
 #define PROTOCOLS_DEALERPREP_H_
 
 #include "ReplicatedPrep.h"
+#include "DealerMatrixPrep.h"
 
 template<class T>
 class DealerPrep : virtual public BitPrep<T>

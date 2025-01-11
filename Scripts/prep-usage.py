@@ -14,7 +14,11 @@ if len(sys.argv) <= 1:
 res = collections.defaultdict(lambda: 0)
 m = 0
 
-tapename = next(Program.read_tapes(sys.argv[1]))
+if os.path.isfile(sys.argv[1]):
+    tapename = re.sub(r'\.bc', '', os.path.basename(sys.argv[1]))
+else:
+    tapename = next(Program.read_tapes(sys.argv[1]))
+
 res = Tape.ReqNum()
 for inst in Tape.read_instructions(tapename):
     res.update(inst.get_usage())

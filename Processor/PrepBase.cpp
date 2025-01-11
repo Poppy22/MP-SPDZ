@@ -40,6 +40,13 @@ string PrepBase::get_edabit_filename(const string& prep_data_dir,
             + to_string(my_num) + get_suffix(thread_num);
 }
 
+string PrepBase::get_matrix_prefix(const string& prep_data_dir,
+        const array<int, 3>& dim)
+{
+    return prep_data_dir + "Matrix-" + to_string(dim[0]) + "x"
+            + to_string(dim[1]) + "x" + to_string(dim[2]);
+}
+
 PrepBase::PrepBase(DataPositions& usage) :
         usage(usage)
 {

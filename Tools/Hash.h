@@ -36,7 +36,8 @@ public:
 	void update(const vector<T>& v, const vector<int>& bit_lengths)
 	{
 	    assert(v.size() == bit_lengths.size());
-	    octetStream tmp(v.size() * sizeof(T));
+	    octetStream tmp;
+	    tmp.reserve(v.size() * sizeof(T));
 	    for (size_t i = 0; i < v.size(); i++)
 	        v[i].pack(tmp, bit_lengths[i]);
 	    tmp.append(0);

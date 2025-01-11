@@ -540,8 +540,8 @@ class split(base.Instruction):
 
     :param: number of arguments to follow (number of bits times number of additive shares plus one)
     :param: source (sint)
-    :param: first share of least significant bit
-    :param: second share of least significant bit
+    :param: first share of least significant bit (sbit)
+    :param: second share of least significant bit (sbit)
     :param: (remaining share of least significant bit)...
     :param: (repeat from first share for bit one step higher)...
     """

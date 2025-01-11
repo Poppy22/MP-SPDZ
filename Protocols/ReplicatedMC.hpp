@@ -72,4 +72,12 @@ typename T::open_type ReplicatedMC<T>::finalize_raw()
     return a + o.get<typename T::open_type>();
 }
 
+template<class T>
+array<typename T::open_type*, 2> ReplicatedMC<T>::finalize_several(size_t n)
+{
+    if (this->values.empty())
+        finalize(this->values, this->secrets);
+    return MAC_Check_Base<T>::finalize_several(n);
+}
+
 #endif

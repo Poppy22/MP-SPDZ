@@ -65,7 +65,7 @@ public:
     /// Get next opened value
     virtual typename T::clear finalize_open();
     virtual typename T::open_type finalize_raw();
-    array<typename T::open_type*, 2> finalize_several(size_t n);
+    virtual array<typename T::open_type*, 2> finalize_several(size_t n);
 
     /// Check whether all ``shares`` are ``value``
     virtual void CheckFor(const typename T::open_type& value, const vector<T>& shares, const Player& P);
@@ -73,6 +73,8 @@ public:
     virtual const Player& get_check_player(const Player& P) const { return P; }
 
     virtual void set_prep(Preprocessing<T>&) {}
+
+    void set_random_element(const T&) {}
 };
 
 #endif /* PROTOCOLS_MAC_CHECK_BASE_H_ */

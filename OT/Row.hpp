@@ -110,20 +110,13 @@ void DeferredPlus<T, U>::pack(octetStream& o) const
 template<class T>
 void Row<T>::pack(octetStream& o) const
 {
-    o.store(this->size());
-    for (size_t i = 0; i < this->size(); i++)
-        rows[i].pack(o);
+    o.store(rows);
 }
 
 template<class T>
 void Row<T>::unpack(octetStream& o)
 {
-    size_t size;
-    o.get(size);
-    rows.clear();
-    rows.reserve(size);
-    for (size_t i = 0; i < size; i++)
-        rows.push_back(o.get<T>());
+    o.get(rows);
 }
 
 template <class V>

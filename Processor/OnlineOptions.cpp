@@ -12,6 +12,8 @@
 
 #include "Math/gfp.hpp"
 
+#include <boost/filesystem.hpp>
+
 using namespace std;
 
 OnlineOptions OnlineOptions::singleton;
@@ -164,6 +166,9 @@ OnlineOptions::OnlineOptions(ez::ezOptionParser& opt, int argc,
     }
 
     opt.resetArgs();
+
+    if (argc > 0)
+        executable = boost::filesystem::path(argv[0]).filename().string();
 }
 
 OnlineOptions::OnlineOptions(ez::ezOptionParser& opt, int argc,
@@ -354,20 +359,6 @@ void OnlineOptions::finalize(ez::ezOptionParser& opt, int argc,
         exit(1);
     }
 
-    if (opt.get("-lgp"))
-    {
-        bigint schedule_prime = BaseMachine::prime_from_schedule(progname);
-        if (prime != 0 and prime != schedule_prime and schedule_prime != 0)
-        {
-            cerr << "Different prime for compilation and computation." << endl;
-            cerr << "Run with '--prime " << schedule_prime
-                    << "' or compile with '--prime " << prime << "'." << endl;
-            exit(1);
-        }
-        if (schedule_prime != 0)
-            prime = schedule_prime;
-    }
-
     for (size_t i = name_index + 1; i < allArgs.size(); i++)
     {
         try
@@ -382,6 +373,38 @@ void OnlineOptions::finalize(ez::ezOptionParser& opt, int argc,
                     << endl;
             exit(1);
         }
+    }
+
+    if (has_option("throw_exceptions"))
+        finalize_with_error(opt);
+    else
+    {
+        try
+        {
+            finalize_with_error(opt);
+        }
+        catch (exception& e)
+        {
+            cerr << "Fatal error in option processing: " << e.what() << endl;
+            exit(1);
+        }
+    }
+}
+
+void OnlineOptions::finalize_with_error(ez::ezOptionParser& opt)
+{
+    if (opt.get("-lgp"))
+    {
+        bigint schedule_prime = BaseMachine::prime_from_schedule(progname);
+        if (prime != 0 and prime != schedule_prime and schedule_prime != 0)
+        {
+            cerr << "Different prime for compilation and computation." << endl;
+            cerr << "Run with '--prime " << schedule_prime
+                    << "' or compile with '--prime " << prime << "'." << endl;
+            exit(1);
+        }
+        if (schedule_prime != 0)
+            prime = schedule_prime;
     }
 
     // ignore program if length explicitly set from command line

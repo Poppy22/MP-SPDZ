@@ -23,7 +23,7 @@ public:
     const static int BIT_LENGTH = K;
     const static int SECURITY = S;
 
-    typedef Beaver<MalRepRingShare> Protocol;
+    typedef Beaver<MalRepRingShare> BasicProtocol;
     typedef HashMaliciousRepMC<MalRepRingShare> MAC_Check;
     typedef MAC_Check Direct_MC;
     typedef ReplicatedInput<MalRepRingShare> Input;
@@ -34,6 +34,8 @@ public:
     typedef Z2<S> random_type;
     typedef MalRepRingShare<K + 2, S> SquareToBitShare;
     typedef MalRepRingPrep<MalRepRingShare> SquarePrep;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     MalRepRingShare()
     {

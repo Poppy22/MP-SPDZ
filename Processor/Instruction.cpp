@@ -93,19 +93,27 @@ void Instruction::bitdecint(ArithmeticProcessor& Proc) const
     }
 }
 
-ostream& operator<<(ostream& s, const Instruction& instr)
+string BaseInstruction::get_name() const
 {
-    switch (instr.get_opcode())
+    switch (get_opcode())
     {
 #define X(NAME, PRE, CODE) \
-    case NAME: s << #NAME; break;
+    case NAME: return #NAME;
     ALL_INSTRUCTIONS
 #undef X
 #define X(NAME, CODE) \
-    case NAME: s << #NAME; break;
+    case NAME: return #NAME;
     COMBI_INSTRUCTIONS
+    default:
+        stringstream ss;
+        ss << hex << get_opcode();
+        return ss.str();
     }
+}
 
+ostream& operator<<(ostream& s, const Instruction& instr)
+{
+    s << instr.get_name();
     s << " size=" << instr.get_size();
     s << " n=" << instr.get_n();
     s << " r=(";

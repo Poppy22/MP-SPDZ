@@ -42,7 +42,7 @@ inline ShareParty<T>& ShareParty<T>::s()
     if (singleton)
         return *singleton;
     else
-        throw runtime_error("no singleton");
+        throw runtime_error("no ShareParty singleton");
 }
 
 }

@@ -17,11 +17,10 @@
  * - share of winning unique id * random value [w]
  *   winning unique id is valid if ∑ [y] * ∑ [r] = ∑ [w]
  *
- * To run with 2 parties / SPDZ engines:
- *   ./Scripts/setup-online.sh to create triple shares for each party (spdz engine).
+ * To run:
  *   ./Scripts/setup-clients.sh to create SSL keys and certificates for clients
- *   ./compile.py bankers_bonus
- *   ./Scripts/run-online.sh bankers_bonus to run the engines.
+ *   ./Scripts/compile-run.py <protocol> bankers_bonus to compile and run the engines.
+ *   (See https://github.com/data61/MP-SPDZ/?tab=readme-ov-file#protocols for options.)
  *
  *   ./bankers-bonus-client.x 0 2 100 0
  *   ./bankers-bonus-client.x 1 2 200 0

@@ -512,9 +512,7 @@ modp Ring_Element::get_constant() const
 void store(octetStream& o,const vector<modp>& v,const Zp_Data& ZpD)
 {
   ZpD.pack(o);
-  o.store((int)v.size());
-  for (unsigned int i=0; i<v.size(); i++)
-     { v[i].pack(o,ZpD); }
+  o.store(v);
 }
 
 
@@ -526,16 +524,7 @@ void get(octetStream& o,vector<modp>& v,const Zp_Data& ZpD)
     throw runtime_error(
         "mismatch: " + to_string(check_Zpd.pr_bit_length) + "/"
             + to_string(ZpD.pr_bit_length));
-  unsigned int length;
-  o.get(length);
-  v.clear();
-  v.reserve(length);
-  modp tmp;
-  for (unsigned int i=0; i<length; i++)
-    {
-      tmp.unpack(o,ZpD);
-      v.push_back(tmp);
-    }
+  o.get(v);
 }
 
 

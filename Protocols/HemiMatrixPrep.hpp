@@ -3,6 +3,9 @@
  *
  */
 
+#ifndef PROTOCOLS_HEMIMATRIXPREP_HPP_
+#define PROTOCOLS_HEMIMATRIXPREP_HPP_
+
 #include "HemiMatrixPrep.h"
 #include "MAC_Check.h"
 #include "FHE/Diagonalizer.h"
@@ -226,3 +229,5 @@ void HemiMatrixPrep<T>::buffer_triples()
     fflush(stderr);
 #endif
 }
+
+#endif

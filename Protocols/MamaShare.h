@@ -39,6 +39,11 @@ public:
             super(other)
     {
     }
+
+    MamaMac operator*(const T& other) const
+    {
+        return super::operator*(SemiShare<T>(other));
+    }
 };
 
 template<class T, int N>
@@ -53,11 +58,13 @@ public:
     typedef FixedVec<SemiShare<T>, N> mac_key_type;
     typedef Share_<SemiShare<T>, MamaMac<T, N>> super;
 
-    typedef Beaver<This> Protocol;
+    typedef Beaver<This> BasicProtocol;
     typedef MAC_Check_<This> MAC_Check;
     typedef Direct_MAC_Check<This> Direct_MC;
     typedef ::Input<This> Input;
     typedef ::PrivateOutput<This> PrivateOutput;
+    typedef MaybeHemi<This> Protocol;
+    typedef DummyMatrixPrep<This> MatrixPrep;
 
     typedef MamaPrep<This> LivePrep;
     typedef MamaShare<typename T::next, N> prep_type;

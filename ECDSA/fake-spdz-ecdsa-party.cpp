@@ -10,10 +10,12 @@
 #include "Math/gfp.h"
 #include "ECDSA/P256Element.h"
 #include "GC/VectorInput.h"
+#include "Protocols/SPDZ.h"
 
 #include "ECDSA/preprocessing.hpp"
 #include "ECDSA/sign.hpp"
 #include "Protocols/Beaver.hpp"
+#include "Protocols/Hemi.hpp"
 #include "Protocols/fake-stuff.hpp"
 #include "Protocols/Share.hpp"
 #include "Protocols/MAC_Check.hpp"

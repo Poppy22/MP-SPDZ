@@ -51,6 +51,7 @@ public:
 
     BitVec_& operator+=(const BitVec_& other) { *this ^= other; return *this; }
     BitVec_& operator-=(const BitVec_& other) { *this ^= other; return *this; }
+    BitVec_& operator*=(const BitVec_& other) { *this &= other; return *this; }
 
     BitVec_ extend_bit() const { return -(this->a & 1); }
 

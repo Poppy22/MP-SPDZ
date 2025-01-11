@@ -18,7 +18,7 @@ public:
     static void basic_setup(Player&) {};
     static void teardown() {};
 
-    MamaPrep<T>(SubProcessor<T>* proc, DataPositions& usage);
+    MamaPrep(SubProcessor<T>* proc, DataPositions& usage);
 
     void buffer_triples();
 };

@@ -139,6 +139,12 @@ ostream& operator <<(ostream& s, const P256Element& x)
     return s;
 }
 
+void P256Element::output(ostream& s, bool human) const
+{
+    assert(human);
+    s << *this;
+}
+
 P256Element::P256Element(const P256Element& other) :
         P256Element()
 {
@@ -153,6 +159,12 @@ P256Element operator*(const P256Element::Scalar& x, const P256Element& y)
 P256Element& P256Element::operator +=(const P256Element& other)
 {
     *this = *this + other;
+    return *this;
+}
+
+P256Element& P256Element::operator *=(const Scalar& other)
+{
+    *this = *this * other;
     return *this;
 }
 

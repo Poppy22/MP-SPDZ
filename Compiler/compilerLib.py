@@ -13,8 +13,18 @@ from .program import Program, defaults
 
 
 class Compiler:
+    singleton = None
+
     def __init__(self, custom_args=None, usage=None, execute=False,
                  split_args=False):
+        if Compiler.singleton:
+            raise CompilerError(
+                "Cannot have more than one compiler instance. "
+                "It's not possible to run direct compilation programs with "
+                "compile.py or compile-run.py.")
+        else:
+            Compiler.singleton = self
+
         if usage:
             self.usage = usage
         else:
@@ -443,6 +453,8 @@ class Compiler:
                         continue
                     m = re.match(r"(\s*)if(\W.*):", line)
                     if m:
+                        while if_stack and if_stack[-1][0] == m.group(1):
+                            if_stack.pop()
                         if_stack.append((m.group(1), len(output)))
                         output.append("%s@if_(%s)\n" % (m.group(1), m.group(2)))
                         output.append("%sdef _():\n" % (m.group(1)))

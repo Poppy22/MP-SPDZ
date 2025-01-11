@@ -8,12 +8,14 @@
 
 #include <pthread.h>
 
+#include "Receiver.h"
+
 #include "Tools/octetStream.h"
 #include "Tools/WaitQueue.h"
 #include "Tools/time-func.h"
 
 template<class T>
-class Sender
+class Sender : CommunicationThread
 {
     T socket;
     WaitQueue<const octetStream*> in;
@@ -27,12 +29,12 @@ class Sender
 
     void start();
     void stop();
-    void run();
+    void run_with_error();
 
 public:
     Timer timer;
 
-    Sender(T socket);
+    Sender(T socket, int other);
     ~Sender();
 
     T get_socket()

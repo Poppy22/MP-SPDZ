@@ -3,11 +3,11 @@
  *
  */
 
-#include "Machines/ShamirMachine.h"
 #include "Protocols/MaliciousShamirShare.h"
+#include "Protocols/ShamirOptions.h"
 #include "Machines/MalRep.hpp"
 
-#include "ShamirMachine.hpp"
+#include "Shamir.hpp"
 
 int main(int argc, const char** argv)
 {

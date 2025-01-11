@@ -5,6 +5,7 @@
 
 #include "Receiver.h"
 #include "ssl_sockets.h"
+#include "Processor/OnlineOptions.h"
 
 #include <iostream>
 using namespace std;
@@ -19,8 +20,14 @@ void* Receiver<T>::run_thread(void* receiver)
     return 0;
 }
 
+CommunicationThread::CommunicationThread(int other) :
+        other(other)
+{
+}
+
 template<class T>
-Receiver<T>::Receiver(T socket) : socket(socket), thread(0)
+Receiver<T>::Receiver(T socket, int other) :
+        CommunicationThread(other), socket(socket), thread(0)
 {
     start();
 }
@@ -44,8 +51,28 @@ void Receiver<T>::stop()
     pthread_join(thread, 0);
 }
 
+void CommunicationThread::run()
+{
+    if (OnlineOptions::singleton.has_option("throw_exceptions"))
+        run_with_error();
+    else
+    {
+        try
+        {
+            run_with_error();
+        }
+        catch (exception& e)
+        {
+            cerr << "Fatal error in communication: " << e.what() << endl;
+            cerr << "This is probably because party " << other
+                    << " encountered a problem." << endl;
+            exit(1);
+        }
+    }
+}
+
 template<class T>
-void Receiver<T>::run()
+void Receiver<T>::run_with_error()
 {
     octetStream* os = 0;
     while (in.pop(os))

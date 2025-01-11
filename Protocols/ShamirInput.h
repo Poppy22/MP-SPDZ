@@ -9,7 +9,7 @@
 #include "Processor/Input.h"
 #include "Shamir.h"
 #include "SemiInput.h"
-#include "Machines/ShamirMachine.h"
+#include "ShamirOptions.h"
 
 /**
  * Base class for input protocols where the inputting player sends a share

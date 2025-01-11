@@ -13,11 +13,7 @@
 template<int X, int L>
 const true_type gfp_<X, L>::invertible;
 template<int X, int L>
-const true_type gfp_<X, L>::prime_field;
-template<int X, int L>
 const int gfp_<X, L>::MAX_N_BITS;
-template<int X, int L>
-gfp_<X, L> gfp_<X, L>::two;
 
 template<int X, int L>
 inline void gfp_<X, L>::read_or_generate_setup(string dir,

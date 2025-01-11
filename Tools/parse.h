@@ -40,14 +40,19 @@ inline void get_ints(int* res, istream& s, int count)
     res[i] = be32toh(res[i]);
 }
 
-inline void get_vector(int m, vector<int>& start, istream& s)
+inline void get_vector(unsigned m, vector<int>& start, istream& s)
 {
   if (s.fail())
     throw runtime_error("error when parsing vector");
-  start.resize(m);
-  s.read((char*) start.data(), 4 * m);
-  for (int i = 0; i < m; i++)
-    start[i] = be32toh(start[i]);
+  int* buffer = new int[m];
+  s.read((char*) buffer, 4 * m);
+  if (not s.fail())
+    {
+      start.resize(m);
+      for (unsigned i = 0; i < m; i++)
+        start[i] = be32toh(buffer[i]);
+    }
+  delete[] buffer;
 }
 
 inline void get_string(string& res, istream& s)

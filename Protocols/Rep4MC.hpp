@@ -27,6 +27,9 @@ void Rep4MC<T>::exchange(const Player& P)
         this->values[i] = this->secrets[i].sum() + a;
     }
     receive_hash.update(right);
+
+    if (OnlineOptions::singleton.has_option("always_check"))
+        Check(P);
 }
 
 template<class T>

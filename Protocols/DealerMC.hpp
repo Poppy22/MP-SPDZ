@@ -74,7 +74,7 @@ typename T::open_type DealerMC<T>::finalize_raw()
 }
 
 template<class T>
-array<typename T::open_type*, 2> DealerMC<T>::finalize_several(int n)
+array<typename T::open_type*, 2> DealerMC<T>::finalize_several(size_t n)
 {
     assert(sub_player);
     return internal.finalize_several(n);

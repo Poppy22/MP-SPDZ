@@ -8,6 +8,9 @@
 
 #include "ShamirMC.h"
 
+#include "MAC_Check_Base.hpp"
+#include "Shamir.hpp"
+
 template<class T>
 ShamirMC<T>::ShamirMC(int t) :
         os(0), player(0), threshold()
@@ -114,6 +117,14 @@ void ShamirMC<T>::finalize(vector<typename T::open_type>& values,
     values.clear();
     for (size_t i = 0; i < S.size(); i++)
         values.push_back(finalize_raw());
+}
+
+template<class T>
+array<typename T::open_type*, 2> ShamirMC<T>::finalize_several(size_t n)
+{
+    this->values.clear();
+    finalize(this->values, vector<T>(n));
+    return MAC_Check_Base<T>::finalize_several(n);
 }
 
 template<class T>

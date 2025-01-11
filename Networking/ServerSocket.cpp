@@ -8,6 +8,7 @@
 #include "Tools/Exceptions.h"
 #include "Tools/time-func.h"
 #include "Tools/octetStream.h"
+#include "Processor/OnlineOptions.h"
 
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
@@ -60,10 +61,9 @@ ServerSocket::ServerSocket(int Portnum) : portnum(Portnum), thread(0)
               << "), trying again in a second ..." << endl;
           sleep(1);
         }
-#ifdef DEBUG_NETWORKING
       else
-        { cerr << "ServerSocket is bound on port " << Portnum << endl; }
-#endif
+        if (OnlineOptions::singleton.has_option("debug_networking"))
+           cerr << "ServerSocket is bound on port " << Portnum << endl;
     }
   if (fl<0) { error("set_up_socket:bind");  }
 
@@ -121,11 +121,12 @@ void ServerSocket::wait_for_client_id(int socket, struct sockaddr dest)
     }
   catch (closed_connection&)
     {
-#ifdef DEBUG_NETWORKING
-      auto& conn = *(sockaddr_in*) &dest;
-      fprintf(stderr, "client on %s:%d left without identification\n",
-          inet_ntoa(conn.sin_addr), ntohs(conn.sin_port));
-#endif
+      if (OnlineOptions::singleton.has_option("debug_networking"))
+        {
+          auto& conn = *(sockaddr_in*) &dest;
+          fprintf(stderr, "client on %s:%d left without identification\n",
+              inet_ntoa(conn.sin_addr), ntohs(conn.sin_port));
+        }
     }
 }
 

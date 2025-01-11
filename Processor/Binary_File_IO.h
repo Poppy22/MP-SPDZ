@@ -37,7 +37,8 @@ class Binary_File_IO
    * Throws file_error.
    */
   template <class T>
-  void read_from_file(const string filename, vector< T >& buffer, const int start_posn, int &end_posn);
+  void read_from_file(const string filename, vector<T>& buffer,
+      const long start_posn, long& end_posn);
 };
 
 #endif

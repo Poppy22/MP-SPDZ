@@ -292,6 +292,9 @@ class dict_by_id(object):
     def __iter__(self):
         return self.keys()
 
+    def pop(self, key):
+        return self.content.pop(id(key), None)
+
 class defaultdict_by_id(dict_by_id):
     def __init__(self, default):
         dict_by_id.__init__(self)

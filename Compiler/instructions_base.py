@@ -1200,9 +1200,11 @@ class VarArgsInstruction(Instruction):
 class VectorInstruction(Instruction):
     __slots__ = []
     is_vec = lambda self: True
+    vector_index = 0
 
     def get_code(self):
-        return super(VectorInstruction, self).get_code(len(self.args[0]))
+        return super(VectorInstruction, self).get_code(
+            len(self.args[self.vector_index]))
 
 class Ciscable(Instruction):
     def copy(self, size, subs):

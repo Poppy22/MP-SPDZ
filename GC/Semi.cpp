@@ -17,7 +17,8 @@ namespace GC
 void Semi::prepare_mult(const SemiSecret& x, const SemiSecret& y, int n,
 		bool repeat)
 {
-    if (repeat and OnlineOptions::singleton.live_prep and (n < 0 or n > 1))
+    if (repeat and OnlineOptions::singleton.live_prep and (n < 0 or n > 1)
+            and P.num_players() == 2)
     {
         this->triples.push_back({{}});
         auto& triple = this->triples.back();

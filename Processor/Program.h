@@ -28,6 +28,8 @@ class Program
 
   string hash;
 
+  string name;
+
   void compute_constants();
 
   public:
@@ -66,6 +68,8 @@ class Program
   template<class sint, class sgf2n>
   void execute(Processor<sint, sgf2n>& Proc) const;
 
+  template<class sint, class sgf2n>
+  void execute_with_errors(Processor<sint, sgf2n>& Proc) const;
 };
 
 #endif

@@ -13,6 +13,8 @@
 
 #include "FHEOffline/Proof.h"
 
+#include "Processor/OnlineOptions.h"
+
 #include <fstream>
 using namespace std;
 
@@ -735,9 +737,9 @@ void load_or_generate(P2Data& P2D, const Ring& R)
   {
       P2D.load(R);
   }
-  catch (...)
+  catch (exception& e)
   {
-      cout << "Loading failed" << endl;
+      cerr << "Loading parameters failed, generating (" << e.what() << ")" << endl;
       init(P2D,R);
       P2D.store(R);
   }

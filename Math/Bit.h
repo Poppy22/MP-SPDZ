@@ -48,7 +48,7 @@ public:
     template<class T>
     T operator*(const T& other) const
     {
-        return other * *this;
+        return this->a ? other : T();
     }
 
     void pack(octetStream& os, int = -1) const

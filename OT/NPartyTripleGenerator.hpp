@@ -9,6 +9,7 @@
 #include "Protocols/MAC_Check.h"
 #include "GC/SemiSecret.h"
 #include "GC/SemiPrep.h"
+#include "Processor/OnlineOptions.h"
 
 #include "OT/Triple.hpp"
 #include "OT/OTMultiplier.hpp"
@@ -25,7 +26,21 @@ template<class T>
 void* run_ot_thread(void* ptr)
 {
     bigint::init_thread();
-    ((OTMultiplierBase*)ptr)->multiply();
+    auto multiplier = (OTMultiplierBase*) ptr;
+    if (OnlineOptions::singleton.has_option("throw_exceptions"))
+        multiplier->multiply();
+    else
+    {
+        try
+        {
+            multiplier->multiply();
+        }
+        catch (exception& e)
+        {
+            cerr << "Fatal error in OT thread: " << e.what() << endl;
+            exit(1);
+        }
+    }
     return NULL;
 }
 

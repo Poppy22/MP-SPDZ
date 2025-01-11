@@ -71,9 +71,9 @@ void Program::parse(istream& s)
     CALLGRIND_STOP_INSTRUMENTATION;
     while (!s.eof())
     {
+        instr.parse(s, pos);
         if (s.bad() or s.fail())
             throw runtime_error("error reading program");
-        instr.parse(s, pos);
         p.push_back(instr);
         //cerr << "\t" << instr << endl;
         s.peek();

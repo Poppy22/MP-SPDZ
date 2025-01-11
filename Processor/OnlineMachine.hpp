@@ -174,7 +174,7 @@ Player* OnlineMachine::new_player(const string& id_base)
 template<class T, class U>
 int OnlineMachine::run()
 {
-    if (online_opts.has_option("throw_exception"))
+    if (online_opts.has_option("throw_exceptions"))
         return run_with_error<T, U>();
     else
     {

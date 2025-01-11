@@ -2,6 +2,7 @@
 #include "Networking/sockets.h"
 #include "Networking/ServerSocket.h"
 #include "Networking/Server.h"
+#include "Processor/OnlineOptions.h"
 
 #include <iostream>
 #include <pthread.h>
@@ -30,26 +31,23 @@ void Server::get_ip(int num)
 
   names[num] = ipstr;
 
-#ifdef DEBUG_NETWORKING
-  cerr << "Client IP address: " << names[num] << endl;
-#endif
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    cerr << "IP address of party " << num << ": " << names[num] << endl;
 }
 
 
 void Server::get_name(int num)
 {
-#ifdef DEBUG_NETWORKING
-  cerr << "Player " << num << " started." << endl;
-#endif
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    cerr << "Player " << num << " started." << endl;
 
   // Receive name sent by client (legacy) - not used here
   octetStream os;
   os.Receive(socket_num[num]);
   receive(socket_num[num],(octet*)&ports[num],4);
-#ifdef DEBUG_NETWORKING
-  cerr << "Player " << num << " sent (IP for info only) " << os.str() << ":"
-      << ports[num] << endl;
-#endif
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    cerr << "Player " << num << " listening on " << os.str() << ":"
+        << ports[num] << endl;
 
   // Get client IP
   get_ip(num);
@@ -121,13 +119,13 @@ void Server::start()
   // set up connections
   for (i=0; i<nmachines; i++)
     {
-#ifdef DEBUG_NETWORKING
-      cerr << "Waiting for player " << i << endl;
-#endif
+      if (OnlineOptions::singleton.has_option("debug_networking"))
+        cerr << "Waiting for player " << i << endl;
+
       socket_num[i] = server.get_connection_socket("P" + to_string(i));
-#ifdef DEBUG_NETWORKING
-      cerr << "Connected to player " << i << endl;
-#endif
+
+      if (OnlineOptions::singleton.has_option("debug_networking"))
+        cerr << "Connected to player " << i << endl;
     }
 
   // get names
@@ -164,10 +162,10 @@ void* Server::start_in_thread(void* server)
 Server* Server::start_networking(Names& N, int my_num, int nplayers,
         string hostname, int portnum, int my_port)
 {
-#ifdef DEBUG_NETWORKING
-  cerr << "Starting networking for " << my_num << "/" << nplayers
-      << " with server on " << hostname << ":" << (portnum) << endl;
-#endif
+  if (OnlineOptions::singleton.has_option("debug_networking"))
+    cerr << "Starting networking for " << my_num << "/" << nplayers
+        << " with server on " << hostname << ":" << (portnum) << endl;
+
   if (my_num < 0 or my_num >= nplayers)
   {
         cerr << "Player number " << my_num << " outside range: 0-"

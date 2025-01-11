@@ -160,6 +160,7 @@ public:
 
   Timer& add_length_only(size_t length);
   Timer& add(const octetStream& os);
+  Timer& add(size_t length);
   void add(const octetStream& os, const TimeScope& scope) { add(os) += scope; }
 };
 

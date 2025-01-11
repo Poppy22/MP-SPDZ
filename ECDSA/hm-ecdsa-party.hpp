@@ -32,7 +32,7 @@
 #include "GC/RepPrep.hpp"
 #include "GC/ThreadMaster.hpp"
 #include "GC/Secret.hpp"
-#include "Machines/ShamirMachine.hpp"
+#include "Machines/Shamir.hpp"
 #include "Machines/MalRep.hpp"
 #include "Machines/Rep.hpp"
 

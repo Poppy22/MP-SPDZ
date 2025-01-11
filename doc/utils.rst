@@ -10,6 +10,17 @@ of the minimum RAM usage per party. The range is relatively large due
 to fact the bytecode is independent of the secret sharing.
 
 
+Preprocessing usage
+-------------------
+
+``Scripts/prep-usage.py <program-with-args>`` gives you an upper limit
+for the usage of preprocessing data such as triples. Note that the
+exact number depends on the protocol in various ways, and that the
+usage is sometimes unpredictable resulting in ``inf`` given. For an
+exact number, you have to run the virtual machine or script using
+the ``--verbose`` argument.
+
+
 Human-readable bytecode/circuit representation
 ----------------------------------------------
 

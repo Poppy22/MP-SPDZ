@@ -1,3 +1,8 @@
+""" This module implements `Dijkstra's algorithm
+<https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm>`_ based on
+oblivious RAM. """
+
+
 from Compiler.oram import *
 
 from Compiler.program import Program
@@ -222,7 +227,21 @@ class HeapQ(object):
         print_ln()
         print_ln()
 
-def dijkstra(source, edges, e_index, oram_type, n_loops=None, int_type=None):
+def dijkstra(source, edges, e_index, oram_type, n_loops=None, int_type=None,
+             debug=False):
+    """ Securely compute Dijstra's algorithm on a secret graph. See
+    :download:`../Programs/Source/dijkstra_example.mpc` for an
+    explanation of the required inputs.
+
+    :param source: source node (secret or clear-text integer)
+    :param edges: ORAM representation of edges
+    :param e_index: ORAM representation of vertices
+    :param oram_type: ORAM type to use internally (default:
+      :py:func:`~Compiler.oram.OptimalORAM`)
+    :param n_loops: when to stop (default: number of edges)
+    :param int_type: secret integer type (default: sint)
+
+    """
     vert_loops = n_loops * e_index.size // edges.size \
         if n_loops else -1
     dist = oram_type(e_index.size, entry_size=(32,log2(e_index.size)), \
@@ -267,27 +286,46 @@ def dijkstra(source, edges, e_index, oram_type, n_loops=None, int_type=None):
         dist.access(v, (basic_type(alt), u), is_shorter)
         #previous.access(v, u, is_shorter)
         Q.update(v, basic_type(alt), is_shorter)
-        print_ln('u: %s, v: %s, alt: %s, dv: %s, first visit: %s', \
-                     u.reveal(), v.reveal(), alt.reveal(), dv[0].reveal(), \
-                     not_visited.reveal())
+        if debug:
+            print_ln('u: %s, v: %s, alt: %s, dv: %s, first visit: %s, '
+                     'shorter: %s, running: %s, queue size: %s, last edge: %s',
+                     u.reveal(), v.reveal(), alt.reveal(), dv[0].reveal(),
+                     not_visited.reveal(), is_shorter.reveal(),
+                     running.reveal(), Q.size.reveal(), last_edge.reveal())
     return dist
 
 def convert_graph(G):
-    edges = [None] * (2 * G.size())
-    e_index = [None] * (len(G))
-    i = 0
-    for v in G:
-        e_index[v] = i
-        for u in G[v]:
-            edges[i] = [u, G[v][u]['weight'], 0]
-            i += 1
-        edges[i-1][-1] = 1
-    return edges, e_index
-
-def test_dijkstra(G, source, oram_type=ORAM, n_loops=None, int_type=sint):
+    """ Convert a `NetworkX directed graph
+    <https://networkx.org/documentation/stable/reference/classes/digraph.html>`_
+    to the cleartext representation of what :py:func:`dijkstra` expects. """
+    G = G.copy()
     for u in G:
         for v in G[u]:
             G[u][v].setdefault('weight', 1)
+    edges = [None] * (2 * G.size())
+    e_index = [None] * (len(G))
+    i = 0
+    for v in sorted(G):
+        e_index[v] = i
+        for u in sorted(G[v]):
+            edges[i] = [u, G[v][u]['weight'], 0]
+            i += 1
+        if not G[v]:
+            edges[i] = [v, 0, 0]
+            i += 1
+        edges[i-1][-1] = 1
+    return list(filter(lambda x: x, edges)), e_index
+
+def test_dijkstra(G, source, oram_type=ORAM, n_loops=None,
+                  int_type=sint):
+    """ Securely compute Dijstra's algorithm on a cleartext graph.
+
+    :param G: directed graph with NetworkX interface
+    :param source: source node (secret or clear-text integer)
+    :param n_loops: when to stop (default: number of edges)
+    :param int_type: secret integer type (default: sint)
+
+    """
     edges_list, e_index_list = convert_graph(G)
     edges = oram_type(len(edges_list), \
                           entry_size=(log2(len(G)), log2(len(G)), 1), \

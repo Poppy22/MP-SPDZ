@@ -35,7 +35,7 @@ public:
     word get_upper() const     { return _mm_cvtsi128_si64(_mm_unpackhi_epi64(a, a)); }
     word get_half(bool upper) const { return upper ? get_upper() : get_lower(); }
 
-#ifdef __SSE41__
+#ifdef __SSE4_1__
     bool operator==(const int128& other) const  { return _mm_test_all_zeros(a ^ other.a, a ^ other.a); }
 #else
     bool operator==(const int128& other) const  { return get_lower() == other.get_lower() and get_upper() == other.get_upper(); }
@@ -152,6 +152,8 @@ class gf2n_long : public gf2n_<int128>
   gf2n_long(const super& g) : super(g) {}
   gf2n_long(const int128& g) : super(g) {}
   gf2n_long(int g) : gf2n_long(int128(unsigned(g))) {}
+  gf2n_long(long g) : gf2n_long(int128(g)) {}
+  gf2n_long(word g) : gf2n_long(int128(g)) {}
   template<class T>
   gf2n_long(IntBase<T> g) : super(g.get()) {}
   template<class T>

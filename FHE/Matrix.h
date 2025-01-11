@@ -13,6 +13,8 @@ typedef vector< vector<bigint> > matrix;
 
 class imatrix : public vector< BitVector >
 {
+    typedef vector<BitVector> super;
+
 public:
     bool operator!=(const imatrix& other) const;
 

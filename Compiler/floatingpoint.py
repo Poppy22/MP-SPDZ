@@ -451,7 +451,7 @@ def Trunc(a, l, m, compute_modulo=False, signed=False):
 @instructions_base.ret_cisc
 def TruncInRing(to_shift, l, pow2m):
     n_shift = int(program.Program.prog.options.ring) - l
-    bits = BitDecRing(to_shift, l, l)
+    bits = util.bit_decompose(to_shift, l)
     rev = types.sint.bit_compose(reversed(bits))
     rev <<= n_shift
     rev *= pow2m

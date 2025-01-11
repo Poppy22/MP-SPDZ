@@ -1,4 +1,4 @@
-"""This module contains an implementation of the "Path Oblivious Heap"
+r"""This module contains an implementation of the "Path Oblivious Heap"
 oblivious priority queue as proposed by 
 `Shi <https://eprint.iacr.org/2019/274.pdf>`_.
 

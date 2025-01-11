@@ -126,10 +126,12 @@ looks as follows::
   000000c8
 
 It consist of the instructions codes and the arguments in big-endian
-order. For example, 0x2 is the code for :py:obj:`lsdi`, 0xa5 is the
-code for :py:obj:`asm_open`, 0xb3 is the code for
-:py:obj:`print_reg_plain`, etc. You can also spot repeated occurrences
-of ``1f ff``, which is the hexadecimal representation of 8191.
+order. For example, 0x2 is the code for
+:py:class:`~Compiler.instructions.ldsi`, 0xa5 is the code for
+:py:obj:`~Compiler.instructions.asm_open`, 0xb3 is the code for
+:py:class:`~Compiler.instructions.print_reg_plain`, etc. You can also
+spot repeated occurrences of ``1f ff``, which is the hexadecimal
+representation of 8191.
 
 Finally, the compilation creates
 :file:`Programs/Schedules/journey.sch`, which is a text file::
@@ -166,7 +168,7 @@ with Rep3 modulo :math:`2^{64}`. The main function in
 <../Processor/Machine.hpp>` with :class:`sint` being
 ``Rep3Share2<64>``. Then, the following happens:
 
-1. :file:`Programs/Schedules/journey.sch` is parsed :func:`load_schedule`.
+1. :file:`Programs/Schedules/journey.sch` is parsed in :func:`load_schedule`.
 2. :file:`Programs/Bytecode/journey-0.bc` is parsed in
    :func:`Machine<sint, sgf2n>::load_program` where
    :func:`Program::parse`. This creates an internal representation of the

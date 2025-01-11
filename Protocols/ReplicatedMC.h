@@ -35,6 +35,7 @@ public:
 
     virtual void exchange(const Player& P);
     virtual typename T::open_type finalize_raw();
+    virtual array<typename T::open_type*, 2> finalize_several(size_t n);
 
     void Check(const Player& P) { (void)P; }
 

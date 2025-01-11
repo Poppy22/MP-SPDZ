@@ -16,14 +16,14 @@ template<class T>
 class AddableVector: public vector<T>
 {
 public:
-    AddableVector<T>() {}
-    AddableVector<T>(size_t n, const T& x = T()) : vector<T>(n, x) {}
+    AddableVector() {}
+    AddableVector(size_t n, const T& x = T()) : vector<T>(n, x) {}
     template <class U, class FD, class S>
-    AddableVector<T>(const Plaintext<U,FD,S>& other) :
-            AddableVector<T>(other.get_poly()) {}
+    AddableVector(const Plaintext<U,FD,S>& other) :
+            AddableVector(other.get_poly()) {}
 
     template <class U>
-    AddableVector<T>(const vector<U>& other)
+    AddableVector(const vector<U>& other)
     {
         this->assign(other.begin(), other.end());
     }
@@ -129,28 +129,40 @@ public:
             (*this)[i].pack(os);
     }
 
-    void unpack_size(octetStream& os, const T& init = T())
+    size_t unpack_size(octetStream& os)
     {
         unsigned int size;
         os.get(size);
-        this->resize(size, init);
+        this->reserve(size);
+        return size;
     }
 
     void unpack(octetStream& os, const T& init = T())
     {
-        unpack_size(os, init);
-        for (unsigned int i = 0; i < this->size(); i++)
-            (*this)[i].unpack(os);
+        size_t new_size = unpack_size(os);
+        this->clear();
+        for (unsigned int i = 0; i < new_size; i++)
+        {
+            this->push_back(init);
+            this->back().unpack(os);
+        }
     }
 
     void add(octetStream& os, T& tmp)
     {
-        unpack_size(os, tmp);
+        size_t new_size = unpack_size(os);
+        T init = tmp;
         T& item = tmp;
         for (unsigned int i = 0; i < this->size(); i++)
         {
             item.unpack(os);
             (*this)[i] += item;
+        }
+        for (size_t i = this->size(); i < new_size; i++)
+        {
+            item.unpack(os);
+            this->push_back(init);
+            this->back() += item;
         }
     }
 

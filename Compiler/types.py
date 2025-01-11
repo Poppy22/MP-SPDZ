@@ -428,7 +428,7 @@ class _int(Tape._no_truth):
         :return: type depends on inputs (secret if any of them is) """
         if util.is_constant(other):
             if other:
-                return self
+                return 1
             else:
                 return 0
         return self + other - self * other
@@ -502,14 +502,14 @@ class _bit(Tape._no_truth):
         return a ^ prod, b ^ prod
 
 class _gf2n(_bit):
-    """ :math:`\mathrm{GF}(2^n)` functionality. """
+    r""" :math:`\mathrm{GF}(2^n)` functionality. """
 
     def if_else(self, a, b):
-        """ MUX in :math:`\mathrm{GF}(2^n)` circuits. Similar to :py:meth:`_int.if_else`. """
+        r""" MUX in :math:`\mathrm{GF}(2^n)` circuits. Similar to :py:meth:`_int.if_else`. """
         return b ^ self * self.hard_conv(a ^ b)
 
     def cond_swap(self, a, b, t=None):
-        """ Swapping in :math:`\mathrm{GF}(2^n)`. Similar to :py:meth:`_int.if_else`. """
+        r""" Swapping in :math:`\mathrm{GF}(2^n)`. Similar to :py:meth:`_int.if_else`. """
         prod = self * self.hard_conv(a ^ b)
         res = a ^ prod, b ^ prod
         if t is None:
@@ -518,7 +518,7 @@ class _gf2n(_bit):
             return tuple(t.conv(r) for r in res)
 
     def bit_xor(self, other):
-        """ XOR in :math:`\mathrm{GF}(2^n)` circuits.
+        r""" XOR in :math:`\mathrm{GF}(2^n)` circuits.
 
         :param self/other: 0 or 1 (any compatible type)
         :rtype: depending on inputs (secret if any of them is) """
@@ -582,6 +582,14 @@ class _structure(Tape._no_truth):
 
     def size_for_mem(self):
         return self.size
+
+    @classmethod
+    def arg_type(cls):
+        if issubclass(cls, _register):
+            return cls.reg_type
+        if issubclass(cls, (cfix, sfix)):
+            return cls.int_type.reg_type
+        raise CompilerError('type not supported as argument: %s' % cls)
 
 class _secret_structure(_structure):
     @classmethod
@@ -1362,7 +1370,7 @@ class cint(_clear, _int):
 
 
 class cgf2n(_clear, _gf2n):
-    """
+    r"""
     Clear :math:`\mathrm{GF}(2^n)` value. n is chosen at runtime.  A
     number operators are supported (``+, -, *, /, **, ^, &, |, ~, ==,
     !=, <<, >>``), returning either :py:class:`cgf2n` if the other
@@ -1381,7 +1389,7 @@ class cgf2n(_clear, _gf2n):
 
     @classmethod
     def bit_compose(cls, bits, step=None):
-        """ Clear :math:`\mathrm{GF}(2^n)` bit composition.
+        r""" Clear :math:`\mathrm{GF}(2^n)` bit composition.
 
         :param bits: list of cgf2n
         :param step: set every :py:obj:`step`-th bit in output (defaults to 1) """
@@ -1478,7 +1486,7 @@ class cgf2n(_clear, _gf2n):
 
     @vectorize
     def bit_decompose(self, bit_length=None, step=None):
-        """ Clear bit decomposition.
+        r""" Clear bit decomposition.
 
         :param bit_length: number of bits (defaults to global :math:`\mathrm{GF}(2^n)` bit length)
         :param step: extract every :py:obj:`step`-th bit (defaults to 1) """
@@ -2685,19 +2693,23 @@ class sint(_secret, _int):
         writesocketshare(client_id, message_type, values[0].size, *values)
 
     @classmethod
-    def read_from_file(cls, start, n_items):
+    def read_from_file(cls, start, n_items=1, crash_if_missing=True, size=1):
         """ Read shares from
         ``Persistence/Transactions-P<playerno>.data``. See :ref:`this
         section <persistence>` for details on the data format.
 
         :param start: starting position in number of shares from beginning (int/regint/cint)
         :param n_items: number of items (int)
+        :param crash_if_missing: crash if file not found (default)
+        :param size: vector size (int)
         :returns: destination for final position, -1 for eof reached, or -2 for file not found (regint)
         :returns: list of shares
         """
-        shares = [cls(size=1) for i in range(n_items)]
+        shares = [cls(size=size) for i in range(n_items)]
         stop = regint()
         readsharesfromfile(regint.conv(start), stop, *shares)
+        if crash_if_missing:
+            library.runtime_error_if(stop == -2, 'Persistence not found')
         return stop, shares
 
     @staticmethod
@@ -2710,9 +2722,11 @@ class sint(_secret, _int):
         :param position: start position (int/regint/cint),
             defaults to end of file
         """
+        if isinstance(shares, sint):
+            shares = [shares]
         for share in shares:
             assert isinstance(share, sint)
-            assert share.size == 1
+            assert share.size == shares[0].size
         if position is None:
             position = -1
         writesharestofile(regint.conv(position), *shares)
@@ -3108,7 +3122,7 @@ class sint(_secret, _int):
     @read_mem_value
     def secure_permute(self, shuffle, unit_size=1, reverse=False):
         res = sint(size=self.size)
-        applyshuffle(res, self, unit_size, shuffle, reverse)
+        applyshuffle(self.size, res, self, unit_size, shuffle, reverse)
         return res
 
     def inverse_permutation(self):
@@ -3246,7 +3260,7 @@ class sintbit(sint):
     __ror__ = __or__
 
 class sgf2n(_secret, _gf2n):
-    """
+    r"""
     Secret :math:`\mathrm{GF}(2^n)` value. n is chosen at runtime.  A
     number operators are supported (``+, -, *, /, **, ^, ~, ==, !=,
     <<``), :py:class:`sgf2n`. Operators generally work with
@@ -3271,7 +3285,7 @@ class sgf2n(_secret, _gf2n):
         return res
 
     def add(self, other):
-        """ Secret :math:`\mathrm{GF}(2^n)` addition (XOR).
+        r""" Secret :math:`\mathrm{GF}(2^n)` addition (XOR).
 
         :param other: sg2fn/cgf2n/regint/int """
         if isinstance(other, sgf2nint):
@@ -3280,7 +3294,7 @@ class sgf2n(_secret, _gf2n):
             return super(sgf2n, self).add(other)
 
     def mul(self, other):
-        """ Secret :math:`\mathrm{GF}(2^n)` multiplication.
+        r""" Secret :math:`\mathrm{GF}(2^n)` multiplication.
 
         :param other: sg2fn/cgf2n/regint/int """
         if isinstance(other, (sgf2nint)):
@@ -3349,7 +3363,7 @@ class sgf2n(_secret, _gf2n):
 
     @vectorize
     def right_shift(self, other, bit_length=None):
-        """ Secret right shift by public value:
+        r""" Secret right shift by public value:
 
         :param other: compile-time (int)
         :param bit_length: number of bits of :py:obj:`self` (defaults to :math:`\mathrm{GF}(2^n)` bit length) """
@@ -3417,6 +3431,7 @@ class _bitint(Tape._no_truth):
     log_rounds = False
     linear_rounds = False
     comp_result = staticmethod(lambda x: x)
+    reverse_type = lambda *args: False
 
     @staticmethod
     def half_adder(a, b):
@@ -3703,6 +3718,8 @@ class _bitint(Tape._no_truth):
             return self.bit_comparator(a, b)
 
     def __lt__(self, other):
+        if self.reverse_type(other):
+            return other > self
         if program.options.comparison == 'log':
             x, not_equal = self.comparison(other)
             res = util.if_else(not_equal, x, 0)
@@ -3711,6 +3728,8 @@ class _bitint(Tape._no_truth):
         return self.comp_result(res)
 
     def __le__(self, other):
+        if self.reverse_type(other):
+            return other >= self
         if program.options.comparison == 'log':
             x, not_equal = self.comparison(other)
             res = util.if_else(not_equal, x, x.long_one())
@@ -3725,6 +3744,8 @@ class _bitint(Tape._no_truth):
         return (self <= other).bit_not()
 
     def __eq__(self, other, bit_length=None):
+        if self.reverse_type(other):
+            return other == self
         diff = self ^ other
         diff_bits = [x.bit_not() for x in diff.bit_decompose()[:bit_length]]
         return self.comp_result(util.tree_reduce(lambda x, y: x.bit_and(y),
@@ -4458,6 +4479,7 @@ class _single(_number, _secret_structure):
         :param start: starting position in number of shares from beginning
             (int/regint/cint)
         :param n_items: number of items (int)
+        :param crash_if_missing: crash if file not found (default)
         :returns: destination for final position, -1 for eof reached,
              or -2 for file not found (regint)
         :returns: list of shares
@@ -4980,11 +5002,21 @@ class sfix(_fix):
         return cfix._new(cint.conv(v, size=size), k, f)
 
     def dot(self, other):
-        """ Dot product with :py:class:`sint`. """
+        """ Dot product with any vector or iterable. """
         if isinstance(other, sint):
             return self._new(sint.dot_product(self.v, other), k=self.k, f=self.f)
+        elif isinstance(other, sfix):
+            assert self.k == other.k
+            assert self.f == other.f
+            return self._new(sint.dot_product(self.v, other.v).round(
+                self.k + other.f, self.f, nearest=self.round_nearest,
+                signed=True), k=self.k, f=self.f)
+        elif isinstance(other, (_int, cfix)):
+            return (self * other).sum()
         else:
-            raise NotImplementedError()
+            other = list(other)
+            assert len(self) == len(other)
+            return sum(a * b for a, b in zip(self, other))
 
     def reveal_to(self, player):
         """ Reveal secret value to :py:obj:`player`.
@@ -5458,7 +5490,7 @@ class squant_params(object):
         return squant._new(shifted, params=self)
 
 class sfloat(_number, _secret_structure):
-    """
+    r"""
     Secret floating-point number.
     Represents :math:`(1 - 2s) \cdot (1 - z)\cdot v \cdot 2^p`.
         
@@ -5947,6 +5979,23 @@ def _get_type(t):
         return t
 
 class _vectorizable:
+    @classmethod
+    def check(cls, index, length, sizes):
+        if isinstance(index, _clear):
+            index = regint.conv(index)
+        if length is not None:
+            from .GC.types import cbits
+            if isinstance(index, int):
+                index += length * (index < 0)
+                if index >= length or index < 0:
+                    raise IndexError('index %s, length %s' % \
+                                         (str(index), str(length)))
+            elif cls.check_indices and not isinstance(index, cbits):
+                library.runtime_error_if(
+                    (index >= length).bit_or(index < 0),
+                    'overflow: %s/%s', index, sizes)
+        return index
+
     def reveal_to_clients(self, clients):
         """ Reveal contents to list of clients.
 
@@ -5985,11 +6034,11 @@ class Array(_vectorizable):
 
     @classmethod
     def create_from(cls, l):
-        """ Convert Python iterator or vector to array. Basic type will be taken
-        from first element, further elements must to be convertible to
-        that.
+        """ Convert Python iterator or vector to array or copy another array.
+        Basic type will be taken from first element, further elements
+        must to be convertible to that.
 
-        :param l: Python iterable or register vector
+        :param l: Python iterable, register vector, or array
         :returns: :py:class:`Array` of appropriate type containing the contents
           of :py:obj:`l`
 
@@ -6049,19 +6098,7 @@ class Array(_vectorizable):
         if isinstance(index, (_secret, _single)):
             raise CompilerError('need cleartext index')
         key = str(index), size or 1
-        if isinstance(index, _clear):
-            index = regint.conv(index)
-        if self.length is not None:
-            from .GC.types import cbits
-            if isinstance(index, int):
-                index += self.length * (index < 0)
-                if index >= self.length or index < 0:
-                    raise IndexError('index %s, length %s' % \
-                                         (str(index), str(self.length)))
-            elif self.check_indices and not isinstance(index, cbits):
-                library.runtime_error_if(
-                    (index >= self.length).bit_or(index < 0),
-                    'overflow: %s/%s', index, self.length)
+        index = self.check(index, self.length, self.length)
         if (program.curr_block, key) not in self.address_cache:
             n = self.value_type.n_elements()
             length = self.length
@@ -6356,13 +6393,14 @@ class Array(_vectorizable):
             def _(i):
                 self[i] = input_from(player, **kwargs)
 
-    def read_from_file(self, start):
+    def read_from_file(self, start, *args, **kwargs):
         """ Read content from ``Persistence/Transactions-P<playerno>.data``.
         Precision must be the same as when storing if applicable. See
         :ref:`this section <persistence>` for details on the data format.
 
         :param start: starting position in number of shares from beginning
             (int/regint/cint)
+        :param crash_if_missing: crash if file not found (default)
         :returns: destination for final position, -1 for eof reached,
              or -2 for file not found (regint)
         """
@@ -6370,8 +6408,9 @@ class Array(_vectorizable):
         res = MemValue(0)
         @library.multithread(None, len(self), max_size=program.budget)
         def _(base, size):
-            stop, shares = self.value_type.read_from_file(start, size)
-            self.assign(shares, base=base)
+            stop, shares = self.value_type.read_from_file(
+                start, *args, size=size, **kwargs)
+            self.assign(shares[0], base=base)
             start.iadd(size)
             res.write(stop)
         return res
@@ -6580,7 +6619,7 @@ class Array(_vectorizable):
         return personal(player, self.create_from(self[:].reveal_to(player)._v))
 
     def sort(self, n_threads=None, batcher=False, n_bits=None):
-        """
+        r"""
         Sort in place using `radix sort
         <https://eprint.iacr.org/2014/121>`_ with complexity
         :math:`O(n \log n)` for :py:class:`sint` and :py:class:`sfix`,
@@ -6670,15 +6709,10 @@ class SubMultiArray(_vectorizable):
             return self.get_vector()
         if isinstance(index, int) and index < 0:
             index += self.sizes[0]
-        key = program.curr_block, str(index)
+        key = program.curr_tape, tuple(
+            (x, x.has_else) for x in program.curr_tape.if_states), str(index)
         if key not in self.sub_cache:
-            if util.is_constant(index) and \
-               (index >= self.sizes[0] or index < 0):
-                raise CompilerError('index out of range')
-            elif self.check_indices:
-                library.runtime_error_if(index >= self.sizes[0],
-                                         'overflow: %s/%s',
-                                         index, self.sizes)
+            index = self.check(index, self.sizes[0], self.sizes)
             if len(self.sizes) == 2:
                 self.sub_cache[key] = \
                         Array(self.sizes[1], self.value_type, \
@@ -6946,20 +6980,21 @@ class SubMultiArray(_vectorizable):
                 my_pos = position + i * self[i].total_size()
             self[i].write_to_file(my_pos)
 
-    def read_from_file(self, start):
+    def read_from_file(self, start, *args, **kwargs):
         """ Read content from ``Persistence/Transactions-P<playerno>.data``.
         Precision must be the same as when storing if applicable. See
         :ref:`this section <persistence>` for details on the data format.
 
         :param start: starting position in number of shares from beginning
             (int/regint/cint)
+        :param crash_if_missing: crash if file not found (default)
         :returns: destination for final position, -1 for eof reached,
              or -2 for file not found (regint)
         """
         start = MemValue(start)
         @library.for_range(len(self))
         def _(i):
-            start.write(self[i].read_from_file(start))
+            start.write(self[i].read_from_file(start, *args, **kwargs))
         return start
 
     def write_to_socket(self, socket, debug=False):
@@ -7424,20 +7459,38 @@ class SubMultiArray(_vectorizable):
             self.secure_permute(perm)
             delshuffle(perm)
 
-    def secure_permute(self, permutation, reverse=False, n_threads=None):
+    def secure_permute(self, permutation, reverse=False, n_threads=None, n_parallel=None):
         """ Securely permute rows (first index). See
         :py:func:`secure_shuffle` for references.
 
         :param permutation: output of :py:func:`sint.get_secure_shuffle()`
         :param reverse: whether to apply inverse (default: False)
-
+        :param n_threads: How many threads should be used. Will not multithread when set to None (default: None)
+        :param n_parallel: How many columns should be permuted in parallel. Will use the compiler's optimization budget is set to None. (default: None).
         """
-        if n_threads is not None:
-            permutation = MemValue(permutation)
-        @library.for_range_multithread(n_threads, 1, self.get_part_size())
-        def _(i):
-            self.set_column(i, self.get_column(i).secure_permute(
-                permutation, reverse=reverse))
+        if (self.value_type == sint) and (n_threads is None):
+            # Use only a single shuffle instruction if applicable and permutation is single-threaded anyway.
+            unit_size = self.get_part_size()
+            n = self.sizes[0] * unit_size
+            res = sint(size=n)
+            applyshuffle(n, res, self[:], unit_size, permutation, reverse)
+            self.assign_vector(res)
+        else:
+            if n_threads is not None:
+                permutation = MemValue(permutation)
+
+            if n_parallel is None:
+                @library.for_range_opt_multithread(n_threads, self.get_part_size())
+                def iter(i):
+                    column = self.get_column(i)
+                    column = column.secure_permute(permutation, reverse=reverse)
+                    self.set_column(i, column)
+            else:
+                @library.for_range_multithread(n_threads, n_parallel, self.get_part_size())
+                def iter(i):
+                    column = self.get_column(i)
+                    column = column.secure_permute(permutation, reverse=reverse)
+                    self.set_column(i, column)
 
     def sort(self, key_indices=None, n_bits=None, batcher=False):
         """ Sort sub-arrays (different first index) in place.

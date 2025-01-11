@@ -48,6 +48,7 @@ public:
     Thread(int thread_num, ThreadMaster<T>& master);
     virtual ~Thread();
 
+    void start();
     void run();
     virtual void pre_run() {}
     virtual void run(Program& program);

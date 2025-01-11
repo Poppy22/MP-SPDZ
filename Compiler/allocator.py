@@ -178,6 +178,8 @@ class StraightlineAllocator:
             dup = dup.vectorbase
             self.alloc[dup] = self.alloc[base]
             dup.i = self.alloc[base]
+            if not dup.dup_count:
+                dup.dup_count = len(base.duplicates)
 
     def dealloc_reg(self, reg, inst, free):
         if reg.vector:
@@ -275,8 +277,9 @@ class StraightlineAllocator:
         for reg in self.alloc:
             for x in reg.get_all():
                 if x not in self.dealloc and reg not in self.dealloc \
-                   and len(x.duplicates) == 0:
-                    print('Warning: read before write at register', x)
+                   and len(x.duplicates) == x.dup_count:
+                    print('Warning: read before write at register %s/%x' % 
+                          (x, id(x)))
                     print('\tregister trace: %s' % format_trace(x.caller,
                                                                 '\t\t'))
                     if options.stop:
@@ -486,7 +489,11 @@ class Merger:
                 if this[-1] < other[0]:
                     del this[:]
             this.append(n)
-            for inst in other:
+            if last_access_this_kind == last_mem_write_of:
+                insts = itertools.chain(other, this)
+            else:
+                insts = other
+            for inst in insts:
                 add_edge(inst, n)
 
         def mem_access(n, instr, last_access_this_kind, last_access_other_kind):
@@ -519,7 +526,11 @@ class Merger:
                last_other_kind[-1] > last_this_kind[-1]:
                 last_this_kind[:] = []
             last_this_kind.append(n)
-            for i in last_other_kind:
+            if last_this_kind == last_mem_write:
+                insts = itertools.chain(last_other_kind, last_this_kind)
+            else:
+                insts = last_other_kind
+            for i in insts:
                 add_edge(i, n)
 
         def keep_order(instr, n, t, arg_index=None):
@@ -750,6 +761,8 @@ class Merger:
                 G.remove_node(i)
                 merge_nodes.discard(i)
                 stats[type(instructions[i]).__name__] += 1
+                for reg in instructions[i].get_def():
+                    self.block.parent.program.base_addresses.pop(reg)
                 instructions[i] = None
             if unused_result:
                 eliminate(i)
@@ -781,10 +794,10 @@ class RegintOptimizer:
         self.rev_offset_cache = {}
         self.range_cache = util.dict_by_id()
 
-    def add_offset(self, res, new_base, new_offset):
-        self.offset_cache[res] = new_base, new_offset
-        if (new_base.i, new_offset) not in self.rev_offset_cache:
-            self.rev_offset_cache[new_base.i, new_offset] = res
+    def add_offset(self, res, new_base, new_offset, multiplier):
+        self.offset_cache[res] = new_base, new_offset, multiplier
+        if (new_base.i, new_offset, multiplier) not in self.rev_offset_cache:
+            self.rev_offset_cache[new_base.i, new_offset, multiplier] = res
 
     def run(self, instructions, program):
         for i, inst in enumerate(instructions):
@@ -808,31 +821,40 @@ class RegintOptimizer:
                     def f(base, delta_reg):
                         delta = self.cache[delta_reg]
                         if base in self.offset_cache:
-                            reg, offset = self.offset_cache[base]
+                            reg, offset, mult = self.offset_cache[base]
                             new_base, new_offset = reg, offset + delta
                         else:
                             new_base, new_offset = base, delta
-                        self.add_offset(inst.args[0], new_base, new_offset)
+                            mult = 1
+                        self.add_offset(inst.args[0], new_base, new_offset,
+                                        mult)
                     if inst.args[1] in self.cache:
                         f(inst.args[2], inst.args[1])
                     elif inst.args[2] in self.cache:
                         f(inst.args[1], inst.args[2])
-                elif isinstance(inst, subint_class) and \
-                     inst.args[2] in self.cache:
-                    delta = self.cache[inst.args[2]]
-                    if inst.args[1] in self.offset_cache:
-                        reg, offset = self.offset_cache[inst.args[1]]
-                        new_base, new_offset = reg, offset - delta
-                    else:
-                        new_base, new_offset = inst.args[1], -delta
-                    self.add_offset(inst.args[0], new_base, new_offset)
+                elif isinstance(inst, subint_class):
+                    def f(reg, cached, reverse):
+                        delta = self.cache[cached]
+                        if reg in self.offset_cache:
+                            reg, offset, mult = self.offset_cache[reg]
+                            new_base, new_offset = reg, offset - delta
+                        else:
+                            new_base = reg
+                            new_offset = -delta if reverse else delta
+                            mult = 1
+                        self.add_offset(inst.args[0], new_base, new_offset,
+                                        mult if reverse else -mult)
+                    if inst.args[1] in self.cache:
+                        f(inst.args[2], inst.args[1], False)
+                    elif inst.args[2] in self.cache:
+                        f(inst.args[1], inst.args[2], True)
             elif isinstance(inst, IndirectMemoryInstruction):
                 if inst.args[1] in self.cache:
                     instructions[i] = inst.get_direct(self.cache[inst.args[1]])
                     instructions[i]._protect = inst._protect
                 elif inst.args[1] in self.offset_cache:
-                    base, offset = self.offset_cache[inst.args[1]]
-                    addr = self.rev_offset_cache[base.i, offset]
+                    base, offset, mult = self.offset_cache[inst.args[1]]
+                    addr = self.rev_offset_cache[base.i, offset, mult]
                     inst.args[1] = addr
                 elif inst.args[1] in self.range_cache:
                     size, base = self.range_cache[inst.args[1]]

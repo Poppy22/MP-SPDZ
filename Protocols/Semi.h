@@ -6,20 +6,20 @@
 #ifndef PROTOCOLS_SEMI_H_
 #define PROTOCOLS_SEMI_H_
 
-#include "SPDZ.h"
+#include "Beaver.h"
 #include "Processor/TruncPrTuple.h"
 
 /**
  * Dishonest-majority protocol for computation modulo a power of two
  */
 template<class T>
-class Semi : public SPDZ<T>
+class Semi : public Beaver<T>
 {
     SeededPRNG G;
 
 public:
     Semi(Player& P) :
-            SPDZ<T>(P)
+            Beaver<T>(P)
     {
     }
 

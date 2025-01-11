@@ -30,6 +30,15 @@ RingOptions::RingOptions(ez::ezOptionParser& opt, int argc, const char** argv)
 
 int RingOptions::ring_size_from_opts_or_schedule(string progname)
 {
+    if (BaseMachine::prime_from_schedule(progname)
+            or BaseMachine::prime_length_from_schedule(progname))
+    {
+        cerr << "Program was compiled for a prime field, "
+                << "not a ring modulo a power of two. "
+                << "Use './compile.py -R <size>'." << endl;
+        exit(1);
+    }
+
     int r = BaseMachine::ring_size_from_schedule(progname);
     if (R_is_set)
     {

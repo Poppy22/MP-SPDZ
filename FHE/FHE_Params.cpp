@@ -61,9 +61,7 @@ bigint FHE_Params::Q() const
 
 void FHE_Params::pack(octetStream& o) const
 {
-  o.store(FFTData.size());
-  for(auto& fd: FFTData)
-    fd.pack(o);
+  o.store(FFTData);
   Chi.pack(o);
   Bval.pack(o);
   o.store(sec_p);
@@ -73,11 +71,7 @@ void FHE_Params::pack(octetStream& o) const
 
 void FHE_Params::unpack(octetStream& o)
 {
-  size_t size;
-  o.get(size);
-  FFTData.resize(size);
-  for (auto& fd : FFTData)
-    fd.unpack(o);
+  o.get(FFTData);
   Chi.unpack(o);
   Bval.unpack(o);
   o.get(sec_p);

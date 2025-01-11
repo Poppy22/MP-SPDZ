@@ -7,7 +7,8 @@
 #define PROTOCOLS_MALICIOUS_SHAMIR_M_C_HPP_
 
 #include "MaliciousShamirMC.h"
-#include "Machines/ShamirMachine.h"
+
+#include "ShamirOptions.h"
 
 template<class T>
 MaliciousShamirMC<T>::MaliciousShamirMC()

@@ -3,6 +3,9 @@
  *
  */
 
+#ifndef PROTOCOLS_POSTSACRIFIE_HPP_
+#define PROTOCOLS_POSTSACRIFIE_HPP_
+
 #include "PostSacrifice.h"
 
 template<class T>
@@ -81,3 +84,5 @@ void PostSacrifice<T>::check()
     operands.erase(operands.begin(), operands.begin() + buffer_size);
     results.clear();
 }
+
+#endif
