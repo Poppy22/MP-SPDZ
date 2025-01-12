@@ -5110,18 +5110,15 @@ class unreduced_sfix(_single):
 
 class custom_sfix(sfix):
 
-    def __init__(self):
-        from .library import get_program
-        p = get_program().prime
+    from .library import get_program
+    PRIME = 18446744073709551557
+    if get_program().prime != None:
+        PRIME = get_program().prime
 
-        self.PRIME = 18446744073709551557
-        if p != None:
-            self.PRIME = p
-
-        self.BIT_LENGTH = self.PRIME.bit_length()
-        self.EDABIT_BIT_LENGTH = self.BIT_LENGTH
-        self.HALF_PRIME = self.PRIME // 2
-
+    BIT_LENGTH = PRIME.bit_length()
+    EDABIT_BIT_LENGTH = BIT_LENGTH
+    HALF_PRIME = PRIME // 2
+        
     # performs R < x; R public constant, x bits shared
     def _RabbitLTBits(self, R, x):
         R_bits = cint.bit_decompose(R, self.BIT_LENGTH)
