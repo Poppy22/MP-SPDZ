@@ -5110,102 +5110,62 @@ class unreduced_sfix(_single):
 
 class custom_sfix(sfix):
 
-    def _RabbitLTB(self, R, x, k):
-        """
-        res = R <? x (logarithmic rounds version)
+    def __init__(self):
+        from .library import get_program
+        p = get_program().prime
 
-        R: clear integer register
-        x: array of secret bits
-        """
-        from .GC.types import sbit, cbits
+        self.PRIME = 18446744073709551557
+        if p != None:
+            self.PRIME = p
 
-        print("!!! in _RabbitLTB")
-        R_bits = cbits.bit_decompose_clear(R, 64)
-        y = [sbit() for i in range(k)]
-        z = [sbit() for i in range(k)]
-        w = [sbit() for i in range(k)]
+        self.BIT_LENGTH = self.PRIME.bit_length()
+        self.EDABIT_BIT_LENGTH = self.BIT_LENGTH
+        self.HALF_PRIME = self.PRIME // 2
 
-        for i in range(k):
-            y[i] = x[i].bit_xor(R_bits[i])
-            y[i] = ~y[i]
+    # performs R < x; R public constant, x bits shared
+    def _RabbitLTBits(self, R, x):
+        R_bits = cint.bit_decompose(R, self.BIT_LENGTH)
+        y = [x[i].bit_xor(R_bits[i]) for i in range(self.BIT_LENGTH)]
+        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
+        w = [z[i] - z[i + 1] for i in range(self.BIT_LENGTH)]
+        return sum((1-R_bits[i]) & w[i] for i in range(self.BIT_LENGTH))
 
-        z[k-1] = y[k-1]
-        w[k-1] = ~y[k-1]
-
-        y = y[::-1]
-
-        def and_op(x, y, z=None):
-            return x & y
-        
-        z = floatingpoint.PreOpL(and_op, y)[::-1]
-
-        for i in range(k-1,0,-1): # no optimizing
-            w[i-1] = z[i-1] ^ z[i]
-
-        out = [sbit() for i in range(k)]
-        for i in range(k):
-            out[i] = R_bits[i] & w[i]
-
-        total = out[0]
-        for i in range(1, k):
-            total = total ^ out[i]
-
-        return total
-
-    def rabbitLTC(self, s, a, c, BIT_SIZE = 64):
-        """
-        s = (c ?< a)
-
-        BIT_SIZE: bit length of a
-        """
-        # try:
-        #     print("!!! in rabbitLTC. Comparing a=", a)
-        # except:
-        #     print("rabbit ltc: print 1 failed")
-
-        from .GC.types import cbits
-        length_eda = BIT_SIZE
-
-        M = P_VALUES[64]
-        R = (M - 1) // 2
-
-        r, r_bits = sint.get_edabit(length_eda, True)
-        masked_a = (a + r).reveal()
-        masked_b = masked_a + M - R
-
-        print("!!! in rabbitLTC. M=%s, R=%s, masked_a=%s, masked_b=%s, c=%s", M, R, masked_a, masked_b, c)
-
-        w = [None, None, None, None]
-
-        w[1] = self._RabbitLTB(masked_a, r_bits, BIT_SIZE)
-        w[2] = self._RabbitLTB(masked_b, r_bits, BIT_SIZE)
-
-        print("!!! in rabbitLTC. w1=%s, w2=%s", w[1].reveal(), w[2].reveal())
-        w[3] = cint(masked_b > c)
-        w3_bits = cbits.bit_decompose_clear(w[3], 64)
-
-        movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
+    def _carry(self, b, a, superfluous_parameter):  # page 45 in [1]
+        return a[0].bit_and(b[0]), a[1] + a[0].bit_and(b[1])
 
 
-    def rabbitLTS(self, a, b):
-        # try:
-        #     print("!!! in rabbitLTS, other=", other.v)
-        # except:
-        #     print("rabbitLTS: print 1 failed")
+    def _BitAdder(self, r0_bits, r1_bits):  # Protocol 4.4 in [1]
+        ds = [[r0_bits[i].bit_xor(r1_bits[i]), r0_bits[i].bit_and(r1_bits[i])] for i in range(self.EDABIT_BIT_LENGTH)]
+        cs = floatingpoint.PreOpL(self._carry, ds)
 
-        res = sint()
-        self.rabbitLTC(res, a - b, 0, program.bit_length)
-        return res
+        ss = [r0_bits[0].bit_xor(r1_bits[0])] + [(r0_bits[i].bit_xor(r1_bits[i]).bit_xor(
+            cs[i - 1][1])) for i in range(1, self.EDABIT_BIT_LENGTH)] + [cs[-1][1]]
+        return ss
+    
 
+    def _rabbitLTS(self, x, y):
+        edabit0, edabit1 = [sint.get_edabit(self.EDABIT_BIT_LENGTH, True) for i in range(2)]
+        b = (y + edabit0[0]).reveal()
+        a = (edabit1[0] - x).reveal()
+        T = a + b
 
-    # These are based on the implementation
-    # self.rabbitLTS(a, b) = rabbitLTC(a-b, 0)
+        w1 = self._RabbitLTBits(b, edabit0[1])
+        w2 = self._RabbitLTBits(a - 1, edabit1[1])
+        w3 = (T - self.HALF_PRIME) < (b - self.HALF_PRIME)
 
+        adder_result = self._BitAdder(edabit0[1], edabit1[1])
+        w4 = adder_result[-1]
+        w5 = self._RabbitLTBits(T, adder_result[:-1])
+
+        w = w1 + w2 + w3 - w4 - w5
+        return sint(w)
+
+    
     def __lt__(self, other):
-        print("!!! in __le__, calling rabbitLTS")
+        print("!!! in __lt__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = self.rabbitLTS(a, b)
+        result = self._rabbitLTS(a, b)
         return result
 
 
@@ -5213,7 +5173,7 @@ class custom_sfix(sfix):
         print("!!! in __le__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - self.rabbitLTS(b, a)
+        result = 1 - self._rabbitLTS(b, a)
         return result
 
 
@@ -5229,7 +5189,7 @@ class custom_sfix(sfix):
         print("!!! in __ge__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - self.rabbitLTS(b, a)
+        result = 1 - self._rabbitLTS(a, b)
         return result
     
 
@@ -5237,7 +5197,7 @@ class custom_sfix(sfix):
         print("!!! in __eq__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = (1 - self.rabbitLTS(a, b)) * (1 - self.rabbitLTS(b, a))
+        result = (1 - self._rabbitLTS(a, b)) * (1 - self._rabbitLTS(b, a))
         return result
     
 
@@ -5245,7 +5205,7 @@ class custom_sfix(sfix):
         print("!!! in __ne__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - (1 - self.rabbitLTS(a, b)) * (1 - self.rabbitLTS(b, a))
+        result = 1 - (1 - self._rabbitLTS(a, b)) * (1 - self._rabbitLTS(b, a))
         return result
 
 
