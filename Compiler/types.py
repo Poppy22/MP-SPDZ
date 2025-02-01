@@ -5156,12 +5156,16 @@ class custom_sfix(sfix):
         w = w1 + w2 + w3 - w4 - w5
         return sint(w)
 
-    
+
+    def _rabbitLTSfix(self, x, y):
+        return 1 - self._rabbitLTS(y, x)
+
+
     def __lt__(self, other):
         print("!!! in __lt__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = self._rabbitLTS(a, b)
+        result = self._rabbitLTSfix(a, b)
         return result
 
 
@@ -5169,7 +5173,7 @@ class custom_sfix(sfix):
         print("!!! in __le__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - self._rabbitLTS(b, a)
+        result = 1 - self._rabbitLTSfix(b, a)
         return result
 
 
@@ -5177,7 +5181,7 @@ class custom_sfix(sfix):
         print("!!! in __gt__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = self._rabbitLTS(b, a)
+        result = self._rabbitLTSfix(b, a)
         return result
     
 
@@ -5185,7 +5189,7 @@ class custom_sfix(sfix):
         print("!!! in __ge__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - self._rabbitLTS(a, b)
+        result = 1 - self._rabbitLTSfix(a, b)
         return result
     
 
@@ -5193,7 +5197,7 @@ class custom_sfix(sfix):
         print("!!! in __eq__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = (1 - self._rabbitLTS(a, b)) * (1 - self._rabbitLTS(b, a))
+        result = (1 - self._rabbitLTSfix(a, b)) * (1 - self._rabbitLTSfix(b, a))
         return result
     
 
@@ -5201,7 +5205,7 @@ class custom_sfix(sfix):
         print("!!! in __ne__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = 1 - (1 - self._rabbitLTS(a, b)) * (1 - self._rabbitLTS(b, a))
+        result = 1 - (1 - self._rabbitLTSfix(a, b)) * (1 - self._rabbitLTSfix(b, a))
         return result
 
 
