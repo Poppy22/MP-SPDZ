@@ -5177,7 +5177,7 @@ class custom_sfix(sfix):
         print("!!! in __gt__, calling rabbitLTS")
         a = self.v
         b = other.v
-        result = self.rabbitLTS(b, a)
+        result = self._rabbitLTS(b, a)
         return result
     
 
