@@ -5119,6 +5119,7 @@ class custom_sfix(sfix):
     HALF_PRIME = PRIME // 2
         
     # performs R < x; R public constant, x bits shared
+    @vectorize
     def _RabbitLTBits(self, R, x):
         R_bits = cint.bit_decompose(R, custom_sfix.BIT_LENGTH)
         y = [x[i].bit_xor(R_bits[i]) for i in range(custom_sfix.BIT_LENGTH)]
@@ -5126,10 +5127,11 @@ class custom_sfix(sfix):
         w = [z[i] - z[i + 1] for i in range(custom_sfix.BIT_LENGTH)]
         return sum((1-R_bits[i]) & w[i] for i in range(custom_sfix.BIT_LENGTH))
 
+    @vectorize
     def _carry(self, b, a, superfluous_parameter):  # page 45 in [1]
         return a[0].bit_and(b[0]), a[1] + a[0].bit_and(b[1])
 
-
+    @vectorize
     def _BitAdder(self, r0_bits, r1_bits):  # Protocol 4.4 in [1]
         ds = [[r0_bits[i].bit_xor(r1_bits[i]), r0_bits[i].bit_and(r1_bits[i])] for i in range(custom_sfix.EDABIT_BIT_LENGTH)]
         cs = floatingpoint.PreOpL(self._carry, ds)
@@ -5138,8 +5140,8 @@ class custom_sfix(sfix):
             cs[i - 1][1])) for i in range(1, custom_sfix.EDABIT_BIT_LENGTH)] + [cs[-1][1]]
         return ss
     
-
     # actually performs x <= y
+    @vectorize
     def _rabbitLTS(self, x, y):
         edabit0, edabit1 = [sint.get_edabit(custom_sfix.EDABIT_BIT_LENGTH, True) for i in range(2)]
         b = (y + edabit0[0]).reveal()
@@ -5159,6 +5161,7 @@ class custom_sfix(sfix):
 
 
     # fix to perform x < y
+    @vectorize
     def _rabbitLTSfix(self, x, y):
         return 1 - self._rabbitLTS(y, x)
 
