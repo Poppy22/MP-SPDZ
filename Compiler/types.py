@@ -5109,11 +5109,12 @@ class unreduced_sfix(_single):
 
 
 class custom_sfix(sfix):
+    #from Compiler.instructions import program
+    from .library import get_program
 
-    from Compiler import instructions
     PRIME = 18446744073709551557
-    if instructions.program.prime != None:
-        PRIME = instructions.program.prime
+    if get_program().prime != None:
+        PRIME = get_program().prime
 
     BIT_LENGTH = PRIME.bit_length()
     EDABIT_BIT_LENGTH = BIT_LENGTH
