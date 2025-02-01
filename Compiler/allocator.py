@@ -837,7 +837,11 @@ class RegintOptimizer:
                         delta = self.cache[cached]
                         if reg in self.offset_cache:
                             reg, offset, mult = self.offset_cache[reg]
-                            new_base, new_offset = reg, offset - delta
+                            new_base = reg
+                            if reverse:
+                                new_offset = offset - delta
+                            else:
+                                new_offset = offset + delta
                         else:
                             new_base = reg
                             new_offset = -delta if reverse else delta

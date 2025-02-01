@@ -106,8 +106,10 @@ def print_str(s, *args, print_secrets=False):
                 raise CompilerError('Cannot print secret value:', args[i])
             elif isinstance(val, cfloat):
                 val.print_float_plain()
-            elif isinstance(val, (list, tuple, Array, SubMultiArray)):
+            elif isinstance(val, (list, tuple)):
                 print_str(*_expand_to_print(val), print_secrets=print_secrets)
+            elif isinstance(val, (Array, SubMultiArray)):
+                val.output(print_secrets=print_secrets)
             else:
                 try:
                     val.output()

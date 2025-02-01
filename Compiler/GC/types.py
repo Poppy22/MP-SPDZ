@@ -66,7 +66,7 @@ class bits(Tape.Register, _structure, _bit):
     def bit_compose(cls, bits):
         bits = list(bits)
         if len(bits) == 1 and isinstance(bits[0], cls):
-            return bits[0]
+            return cls(bits[0])
         bits = list(bits)
         for i in range(len(bits)):
             if util.is_constant(bits[i]):

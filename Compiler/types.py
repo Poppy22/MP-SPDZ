@@ -4096,7 +4096,7 @@ class cfix(_number, _structure):
             v = self.int_rep(v, f=f, k=k)
             self.v = cint(v, size=size)
         elif isinstance(v, cfix):
-            self.v = v.v
+            self.v = cint(v.v)
         elif v is None:
             self.v = cint(0)
         else:
@@ -4697,7 +4697,7 @@ class _fix(_single):
             a = b*(_v.v << (p)) + (1-b)*(_v.v >> (-p))
             self.v = (1-2*_v.s)*a
         elif isinstance(_v, type(self)):
-            self.v = _v.v
+            self.v = self.int_type(_v.v)
         elif isinstance(_v, cfix):
             self.v = self.int_type(adjust(_v))
         elif isinstance(_v, (MemValue, MemFix)):
@@ -6593,6 +6593,12 @@ class Array(_vectorizable):
             library.print_str('%s', self[self.length - 1].reveal())
             library.print_str(']' + end)
 
+    def output(self, **kwargs):
+        try:
+            library.print_str('%s', self[:], **kwargs)
+        except:
+            MultiArray.output(self, **kwargs)
+
     def reveal_to_binary_output(self, player=None):
         """ Reveal to binary output if supported by type.
 
@@ -7569,6 +7575,13 @@ class SubMultiArray(_vectorizable):
                 self[i].print_reveal_nested(end=', ')
             self[len(self) - 1].print_reveal_nested(end='')
             library.print_str(']' + end)
+
+    def output(self, **kwargs):
+        library.print_str('[')
+        @library.for_range(len(self) - 1)
+        def _(i):
+            library.print_str('%s, ', self[i], **kwargs)
+        library.print_str('%s]', self[len(self) - 1], **kwargs)
 
     def reveal_to_binary_output(self, player=None):
         """ Reveal to binary output if supported by type.
