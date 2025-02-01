@@ -5139,6 +5139,7 @@ class custom_sfix(sfix):
         return ss
     
 
+    # actually performs x <= y
     def _rabbitLTS(self, x, y):
         edabit0, edabit1 = [sint.get_edabit(custom_sfix.EDABIT_BIT_LENGTH, True) for i in range(2)]
         b = (y + edabit0[0]).reveal()
@@ -5157,52 +5158,47 @@ class custom_sfix(sfix):
         return sint(w)
 
 
+    # fix to perform x < y
     def _rabbitLTSfix(self, x, y):
         return 1 - self._rabbitLTS(y, x)
 
-
+    @vectorize
     def __lt__(self, other):
-        print("!!! in __lt__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = self._rabbitLTSfix(a, b)
         return result
 
-
+    @vectorize
     def __le__(self, other):
-        print("!!! in __le__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = 1 - self._rabbitLTSfix(b, a)
         return result
 
-
+    @vectorize
     def __gt__(self, other):
-        print("!!! in __gt__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = self._rabbitLTSfix(b, a)
         return result
     
-
+    @vectorize
     def __ge__(self, other):
-        print("!!! in __ge__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = 1 - self._rabbitLTSfix(a, b)
         return result
     
-
+    @vectorize
     def __eq__(self, other):
-        print("!!! in __eq__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = (1 - self._rabbitLTSfix(a, b)) * (1 - self._rabbitLTSfix(b, a))
         return result
     
-
+    @vectorize
     def __ne__(self, other):
-        print("!!! in __ne__, calling rabbitLTS")
         a = self.v
         b = other.v
         result = 1 - (1 - self._rabbitLTSfix(a, b)) * (1 - self._rabbitLTSfix(b, a))
