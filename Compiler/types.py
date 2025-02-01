@@ -5112,12 +5112,8 @@ class custom_sfix(sfix):
     #from Compiler.instructions import program
     # from Compiler import floatingpoint
     # from Compiler.util import bit_decompose
-    from Compiler.instructions import program as prog
 
-    PRIME = 18446744073709551557
-    if prog.prime != None:
-        PRIME = prog.prime
-
+    PRIME = 18446744073709551557 # hardcoded at runtime also :D
     BIT_LENGTH = PRIME.bit_length()
     EDABIT_BIT_LENGTH = BIT_LENGTH
     HALF_PRIME = PRIME // 2
