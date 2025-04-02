@@ -5156,8 +5156,8 @@ class custom_sfix_field(sfix):
         length_eda = BIT_SIZE
         library.print_ln("custom sfix: bitsize = %s", BIT_SIZE)
 
-        M = P_VALUES[64]
-        R = (M - 1) // 2  # for field; use 0 for ring
+        M = 18446744073709551557
+        R = (M - 1) // 2
 
         r, r_bits = sint.get_edabit(length_eda, True)
         masked_a = (x + r).reveal()
