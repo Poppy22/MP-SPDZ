@@ -99,7 +99,8 @@ class NonLinear:
         w[3] = cint(masked_b < 0)
         library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
 
-        result = w[1] - w[2] + w[3]
+        aux = w[1].bit_xor(w[2])
+        result = aux.bit_xor(w[3])
         library.print_ln("end of ltz ring: result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
 
@@ -300,7 +301,8 @@ class Ring(Masking):
         w[3] = cint(masked_b < 0)
         library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
 
-        result = w[1] - w[2] + w[3]
+        aux = w[1].bit_xor(w[2])
+        result = aux.bit_xor(w[3])
         library.print_ln("end of ltz ring: result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
     
