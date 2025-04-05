@@ -48,11 +48,33 @@ class NonLinear:
     # R: clear-text; x: edabit in binary format
     def LTBits(self, R, x, r, BIT_SIZE):
         R_bits = cint.bit_decompose(R, BIT_SIZE)
-        y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
-        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
-        w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
+        library.print_ln("\nLTBits: R_bits= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", R_bits[i])
 
+        library.print_ln("\nLTBits from bits: x = ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", x[i].reveal())
+
+        y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
+        library.print_ln("\nLTBits: y_bits= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", y[i].reveal())
+
+        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
+        library.print_ln("\nLTBits: z= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", z[i].reveal())
+
+        w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
+        library.print_ln("\nLTBits: w= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", w[i].reveal())
+        
+        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
+        library.print_ln("\nend of LTB rabbit Sum=%s; returning 1 - sum: %s; and with types.sintbit = %s", s.reveal(), (1 - s).reveal(), (types.sintbit(1) - types.sintbit(s)).reveal())
+        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
+    
     def rabbitLTZField(self, x, BIT_SIZE = 64):
         """
         s = (c ?< a)
@@ -69,10 +91,16 @@ class NonLinear:
         w = [None, None, None, None]
 
         w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
+        library.print_ln("w1, comparing: masked_a=%s edabit=%s w1=%s", masked_a, r.reveal(), w[1].reveal())
+
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
+        library.print_ln("w2, comparing: masked_b=%s edabit=%s w2=%s", masked_b, r.reveal(), w[2].reveal())
+
         w[3] = cint(masked_b < 0)
+        library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
 
         result = w[1] - w[2] + w[3]
+        library.print_ln("end of ltz ring: result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
 
     # def rabbitLTS_fix(self, a, b):
@@ -221,9 +249,31 @@ class Ring(Masking):
     # R: clear-text; x: edabit in binary format
     def LTBits(self, R, x, r, BIT_SIZE):
         R_bits = cint.bit_decompose(R, BIT_SIZE)
+        library.print_ln("\nLTBits: R_bits= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", R_bits[i])
+
+        library.print_ln("\nLTBits from bits: x = ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", x[i].reveal())
+
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
+        library.print_ln("\nLTBits: y_bits= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", y[i].reveal())
+
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
+        library.print_ln("\nLTBits: z= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", z[i].reveal())
+
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
+        library.print_ln("\nLTBits: w= ")
+        for i in range(BIT_SIZE):
+            library.print_without_ln("%s", w[i].reveal())
+        
+        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
+        library.print_ln("\nend of LTB rabbit Sum=%s; returning 1 - sum: %s; and with types.sintbit = %s", s.reveal(), (1 - s).reveal(), (types.sintbit(1) - types.sintbit(s)).reveal())
         return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
     
     def rabbitLTZRing(self, x, BIT_SIZE = 64):
@@ -242,10 +292,16 @@ class Ring(Masking):
         w = [None, None, None, None]
 
         w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
+        library.print_ln("w1, comparing: masked_a=%s edabit=%s w1=%s", masked_a, r.reveal(), w[1].reveal())
+
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
+        library.print_ln("w2, comparing: masked_b=%s edabit=%s w2=%s", masked_b, r.reveal(), w[2].reveal())
+
         w[3] = cint(masked_b < 0)
+        library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
 
         result = w[1] - w[2] + w[3]
+        library.print_ln("end of ltz ring: result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
     
     def ltz(self, a, k):
@@ -253,6 +309,6 @@ class Ring(Masking):
         prog = program.Program.prog
         if prog.options.comparison_rabbit:
             library.print_ln("Line 226: calling rabbitLTZ from ring")
-            return self.rabbitLTZRing(a, k)
+            return self.rabbitLTZRing(a)
         else:
             return LtzRing(a, k)
