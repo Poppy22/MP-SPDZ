@@ -5113,37 +5113,9 @@ class custom_sfix_field(sfix):
     # R: clear-text; x: edabit in binary format
     def LTBits(self, R, x, r, BIT_SIZE):
         R_bits = cint.bit_decompose(R, BIT_SIZE)
-        library.print_ln("\nLTBits: R_bits= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", R_bits[i])
-
-        edabit = cint.bit_decompose(r.reveal(), BIT_SIZE)
-        library.print_ln("\nLTBits: edabit arith revealed= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", edabit[i].reveal())
-
-        library.print_ln("\nLTBits from bits: x = ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", x[i].reveal())
-
-        
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
-        library.print_ln("\nLTBits: y= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", y[i].reveal())
-
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
-        library.print_ln("\nLTBits: z= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", z[i].reveal())
-
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        library.print_ln("\nLTBits: w= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", w[i].reveal())
-
-        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
-        library.print_ln("\nSum=%s", s.reveal())
         return_value = 1 - sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
         return return_value
 
@@ -5154,7 +5126,6 @@ class custom_sfix_field(sfix):
         BIT_SIZE: bit length of a
         """
         length_eda = BIT_SIZE
-        library.print_ln("custom sfix: bitsize = %s", BIT_SIZE)
 
         M = 18446744073709551557
         R = (M - 1) // 2
@@ -5165,17 +5136,9 @@ class custom_sfix_field(sfix):
         w = [None, None, None, None]
 
         w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
-        library.print_ln("w1, comparing: masked_a=%s edabit=%s w1=%s", masked_a, r.reveal(), w[1].reveal())
-        
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
-        library.print_ln("w2, comparing: masked_b=%s edabit=%s w2=%s", masked_b, r.reveal(), w[2].reveal())
-
         w[3] = cint(masked_b < 0)
-        library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
-
         result = w[1] - w[2] + w[3]
-
-        library.print_ln("final result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
 
     def rabbitLTS_fix(self, a, b):
@@ -5234,37 +5197,9 @@ class custom_sfix_ring(sfix):
     # R: clear-text; x: edabit in binary format
     def LTBits(self, R, x, r, BIT_SIZE):
         R_bits = cint.bit_decompose(R, BIT_SIZE)
-        library.print_ln("\nLTBits: R_bits= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", R_bits[i])
-
-        edabit = cint.bit_decompose(r.reveal(), BIT_SIZE)
-        library.print_ln("\nLTBits: edabit arith revealed= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", edabit[i].reveal())
-
-        library.print_ln("\nLTBits from bits: x = ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", x[i].reveal())
-
-        
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
-        library.print_ln("\nLTBits: y= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", y[i].reveal())
-
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
-        library.print_ln("\nLTBits: z= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", z[i].reveal())
-
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        library.print_ln("\nLTBits: w= ")
-        for i in range(BIT_SIZE):
-            library.print_without_ln("%s", w[i].reveal())
-
-        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
-        library.print_ln("\nSum=%s", s.reveal())
         return_value = 1 - sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
         return return_value
     
@@ -5275,7 +5210,6 @@ class custom_sfix_ring(sfix):
         BIT_SIZE: bit length of a
         """
         length_eda = BIT_SIZE
-        library.print_ln("custom sfix: bitsize = %s", BIT_SIZE)
 
         M = P_VALUES[64]
         R = 0 # for ring
@@ -5286,17 +5220,9 @@ class custom_sfix_ring(sfix):
         w = [None, None, None, None]
 
         w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
-        library.print_ln("w1, comparing: masked_a=%s edabit=%s w1=%s", masked_a, r.reveal(), w[1].reveal())
-        
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
-        library.print_ln("w2, comparing: masked_b=%s edabit=%s w2=%s", masked_b, r.reveal(), w[2].reveal())
-
         w[3] = cint(masked_b < 0)
-        library.print_ln("w3, comparing: masked_b=%s with %s, w3=%s", masked_b, M - R, w[3].reveal())
-
         result = w[1] - w[2] + w[3]
-
-        library.print_ln("final result = %s and 1- result=%s", result.reveal(), (1-result).reveal())
         return sint(1 - result)
 
     def rabbitLTS_fix(self, a, b):
