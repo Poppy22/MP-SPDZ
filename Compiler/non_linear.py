@@ -53,7 +53,7 @@ class NonLinear:
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
         return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
 
-    def rabbitLTZ(self, x, BIT_SIZE = 64):
+    def rabbitLTZField(self, x, BIT_SIZE = 64):
         """
         s = (c ?< a)
 
@@ -87,7 +87,7 @@ class NonLinear:
         prog = program.Program.prog
         if prog.options.comparison_rabbit:
             library.print_ln("Line 90: calling rabbitLTZ from field")
-            return self.rabbitLTZ(a, k)
+            return self.rabbitLTZField(a)
         
         # else, use truncation
         return -self.trunc(a, k, k - 1, True)
