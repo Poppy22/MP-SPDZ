@@ -45,48 +45,49 @@ class NonLinear:
             return a
         return self._trunc(a, k, m, signed)
     
-    def LTBits(self, R, x, BIT_SIZE):
-        library.print_ln("in LTBits")
+    # R: clear-text; x: edabit in binary format
+    def LTBits(self, R, x, r, BIT_SIZE):
         R_bits = cint.bit_decompose(R, BIT_SIZE)
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-
-        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
+        return_value = 1 - sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
+        return return_value
 
     def rabbitLTZ(self, x, BIT_SIZE = 64):
         """
-        s = (x <? 0)
-        BIT_SIZE: bit length of x
-        """
-        length_eda = 64 # BIT_SIZE
+        s = (c ?< a)
 
-        M = P_VALUES[64] # TODO: get program.prime
-        R = 0
+        BIT_SIZE: bit length of a
+        """
+        length_eda = BIT_SIZE
+        M = 18446744073709551557
+        R = (M - 1) // 2
 
         r, r_bits = sint.get_edabit(length_eda, True)
         masked_a = (x + r).reveal()
-        masked_b = (x + r + M - R).reveal()
+        masked_b = (x + r + M - R).reveal() # masked_a + 1
         w = [None, None, None, None]
 
-        library.print_ln("w1, comparing: masked_a=%s edabit=%s", masked_a, r.reveal())
-        w[1] = self.LTBits(masked_a, r_bits, BIT_SIZE)
-
-        library.print_ln("w2, comparing: masked_b=%s edabit=%s", masked_b, r.reveal())
-        w[2] = self.LTBits(masked_b, r_bits, BIT_SIZE)
-
-        library.print_ln("w3, comparing: masked_b=%s with zero", masked_a)
+        w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
+        w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
         w[3] = cint(masked_b < 0)
 
         result = w[1] - w[2] + w[3]
-
-        library.print_ln("w1=%s w2=%s w3=%s result=%s", w[1].reveal(), w[2].reveal(), w[3], result.reveal())
         return sint(1 - result)
 
+    # def rabbitLTS_fix(self, a, b):
+    #     return 1 - self.rabbitLTS(b, a)
+    
+    # def rabbitLTS(self, a, b):
+    #     res = self.rabbitLTZ(a - b)
+    #     return res
+
     def ltz(self, a, k):
-        library.print_ln("a=%s k=%s", a.reveal(), k)
+        library.print_ln("Line 87: a=%s k=%s", a.reveal(), k)
         prog = program.Program.prog
         if prog.options.comparison_rabbit:
+            library.print_ln("Line 90: calling rabbitLTZ from field")
             return self.rabbitLTZ(a, k)
         
         # else, use truncation
@@ -218,5 +219,42 @@ class Ring(Masking):
         else:
             return super(Ring, self).trunc_round_nearest(a, k, m, signed)
 
+    # R: clear-text; x: edabit in binary format
+    def LTBits(self, R, x, r, BIT_SIZE):
+        R_bits = cint.bit_decompose(R, BIT_SIZE)
+        y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
+        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
+        w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
+        return_value = 1 - sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
+        return return_value
+    
+    def rabbitLTZRing(self, x, BIT_SIZE = 64):
+        """
+        s = (c ?< a)
+
+        BIT_SIZE: bit length of a
+        """
+        length_eda = BIT_SIZE
+        M = P_VALUES[64]
+        R = 0 # for ring
+
+        r, r_bits = sint.get_edabit(length_eda, True)
+        masked_a = (x + r).reveal()
+        masked_b = (x + r + M - R).reveal() # masked_a + 1
+        w = [None, None, None, None]
+
+        w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
+        w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
+        w[3] = cint(masked_b < 0)
+
+        result = w[1] - w[2] + w[3]
+        return sint(1 - result)
+    
     def ltz(self, a, k):
-        return LtzRing(a, k)
+        library.print_ln("Line 223: a=%s k=%s", a.reveal(), k)
+        prog = program.Program.prog
+        if prog.options.comparison_rabbit:
+            library.print_ln("Line 226: calling rabbitLTZ from ring")
+            return self.rabbitLTZRing(a, k)
+        else:
+            return LtzRing(a, k)
