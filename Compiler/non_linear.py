@@ -51,8 +51,7 @@ class NonLinear:
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
-        return types.sbit(1) - types.sbit(s)
+        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
     
     def rabbitLTZField(self, x, BIT_SIZE = 64):
         """
@@ -218,8 +217,7 @@ class Ring(Masking):
         y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
         z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
         w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        s = sum((R_bits[i] & w[i]) for i in range(BIT_SIZE))
-        return types.sbit(1) - types.sbit(s)
+        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
     
     def rabbitLTZRing(self, x, BIT_SIZE = 64):
         """
