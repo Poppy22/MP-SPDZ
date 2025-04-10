@@ -72,8 +72,8 @@ class NonLinear:
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
         w[3] = cint(masked_b < 0)
 
-        aux = w[1].bit_xor(w[2])
-        result = aux.bit_xor(w[3])
+        aux = w[1] | w[2] - w[1] & w[2] # w[1].bit_xor(w[2])
+        result = aux | w[3] - aux & w[3] # aux.bit_xor(w[3])
         return sint(1 - result)
 
 
@@ -238,8 +238,8 @@ class Ring(Masking):
         w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
         w[3] = cint(masked_b < 0)
 
-        aux = w[1].bit_xor(w[2])
-        result = aux.bit_xor(w[3])
+        aux = w[1] | w[2] - w[1] & w[2] # w[1].bit_xor(w[2])
+        result = aux | w[3] - aux & w[3] # aux.bit_xor(w[3])
         return sint(1 - result)
     
     def ltz(self, a, k):
