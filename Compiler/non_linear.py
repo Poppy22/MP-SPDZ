@@ -45,39 +45,7 @@ class NonLinear:
             return a
         return self._trunc(a, k, m, signed)
     
-    # R: clear-text; x: edabit in binary format
-    def LTBits(self, R, x, r, BIT_SIZE):
-        R_bits = cint.bit_decompose(R, BIT_SIZE)
-        y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
-        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
-        w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
-    
-    def rabbitLTZField(self, x, BIT_SIZE = 64):
-        """
-        s = (c ?< a)
-
-        BIT_SIZE: bit length of a
-        """
-        length_eda = BIT_SIZE
-        M = 18446744073709551557
-        R = (M - 1) // 2
-
-        r, r_bits = sint.get_edabit(length_eda, True)
-        masked_a = (x + r).reveal()
-        masked_b = (x + r + M - R).reveal() # masked_a + 1
-        w = [None, None, None, None]
-
-        w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
-        w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
-        w[3] = cint(masked_b < 0)
-
-        aux = w[1].bit_xor(w[2])
-        result = aux.bit_xor(w[3])
-        return sint(1 - result)
-
-    
-    def RabbitLTDragos(self, R, x, k):
+    def RabbitLTBDragos(self, R, x, k):
         """
         res = R <? x (logarithmic rounds version)
 
@@ -126,7 +94,7 @@ class NonLinear:
         k: bit length of a
         """
 
-        from .GC.types import sbit, cbits
+        from .GC.types import cbits
         BIT_SIZE = 64
         length_eda = BIT_SIZE
 
@@ -138,8 +106,8 @@ class NonLinear:
 
         w = [None, None, None, None]
 
-        w[1] = self.RabbitLTDragos(masked_a, r_bits, BIT_SIZE)
-        w[2] = self.RabbitLTDragos(masked_b, r_bits, BIT_SIZE)
+        w[1] = self.RabbitLTBDragos(masked_a, r_bits, BIT_SIZE)
+        w[2] = self.RabbitLTBDragos(masked_b, r_bits, BIT_SIZE)
 
         w[3] = cint(masked_b > 0)
         w3_bits = cbits.bit_decompose_clear(w[3], 64)
@@ -286,40 +254,83 @@ class Ring(Masking):
         else:
             return super(Ring, self).trunc_round_nearest(a, k, m, signed)
 
-    # R: clear-text; x: edabit in binary format
-    def LTBits(self, R, x, r, BIT_SIZE):
-        R_bits = cint.bit_decompose(R, BIT_SIZE)
-        y = [x[i].bit_xor(R_bits[i]) for i in range(BIT_SIZE)]
-        z = floatingpoint.PreOpL(floatingpoint.or_op, y[::-1])[::-1] + [0]
-        w = [z[i] - z[i + 1] for i in range(BIT_SIZE)]
-        return types.sintbit(1) - types.sintbit(sum((R_bits[i] & w[i]) for i in range(BIT_SIZE)))
-    
-    def rabbitLTZRing(self, x, BIT_SIZE = 64):
+    def RabbitLTBDragos(self, R, x, k):
         """
-        s = (c ?< a)
+        res = R <? x (logarithmic rounds version)
 
-        BIT_SIZE: bit length of a
+        R: clear integer register
+        x: array of secret bits
         """
+        from .GC.types import sbit, cbits
+
+        R_bits = cbits.bit_decompose_clear(R, 64)
+        y = [sbit() for i in range(k)]
+        z = [sbit() for i in range(k)]
+        w = [sbit() for i in range(k)]
+
+        for i in range(k):
+            y[i] = x[i].bit_xor(R_bits[i])
+            y[i] = ~y[i]
+
+        z[k-1] = y[k-1]
+        w[k-1] = ~y[k-1]
+
+        y = y[::-1]
+
+        def and_op(x, y, z=None):
+            return x & y
+
+        z = floatingpoint.PreOpL(and_op, y)[::-1]
+        #z = floatingpoint.PreOpL2(and_op, y)[::-1]
+
+        for i in range(k-1,0,-1): # no optimizing
+            w[i-1] = z[i-1] ^ z[i]
+
+        out = [sbit() for i in range(k)]
+        for i in range(k):
+            out[i] = R_bits[i] & w[i]
+
+        total = out[0]
+        for i in range(1, k):
+            total = total ^ out[i]
+
+        return total
+
+    def customLTZDragos(self, s, a):
+        """
+        s = (a ?< 0)
+
+        k: bit length of a
+        """
+
+        from .GC.types import cbits
+        BIT_SIZE = 64
         length_eda = BIT_SIZE
-        M = P_VALUES[64]
-        R = 0 # for ring
 
+        M = P_VALUES[64]
+        R = 0
         r, r_bits = sint.get_edabit(length_eda, True)
-        masked_a = (x + r).reveal()
-        masked_b = (x + r + M - R).reveal() # masked_a + 1
+        masked_a = (a + r).reveal()
+        masked_b = masked_a + M - R
+
         w = [None, None, None, None]
 
-        w[1] = self.LTBits(masked_a, r_bits, r, BIT_SIZE)
-        w[2] = self.LTBits(masked_b, r_bits, r, BIT_SIZE)
-        w[3] = cint(masked_b < 0)
+        w[1] = self.RabbitLTBDragos(masked_a, r_bits, BIT_SIZE)
+        w[2] = self.RabbitLTBDragos(masked_b, r_bits, BIT_SIZE)
 
-        aux = w[1].bit_xor(w[2])
-        result = aux.bit_xor(w[3])
-        return sint(1 - result)
+        w[3] = cint(masked_b > 0)
+        w3_bits = cbits.bit_decompose_clear(w[3], 64)
+
+        movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
+
+    def rabbit(self, a):
+        res = sint()
+        self.customLTZDragos(res, a)
+        return res
     
     def ltz(self, a, k):
         prog = program.Program.prog
         if prog.options.comparison_rabbit:
-            return self.rabbitLTZRing(a)
+            return self.rabbit(a)
         else:
             return LtzRing(a, k)
