@@ -76,11 +76,86 @@ class NonLinear:
         result = aux.bit_xor(w[3])
         return sint(1 - result)
 
+    
+    def RabbitLTDragos(self, R, x, k):
+        """
+        res = R <? x (logarithmic rounds version)
+
+        R: clear integer register
+        x: array of secret bits
+        """
+        from .GC.types import sbit, cbits
+
+        R_bits = cbits.bit_decompose_clear(R, 64)
+        y = [sbit() for i in range(k)]
+        z = [sbit() for i in range(k)]
+        w = [sbit() for i in range(k)]
+
+        for i in range(k):
+            y[i] = x[i].bit_xor(R_bits[i])
+            y[i] = ~y[i]
+
+        z[k-1] = y[k-1]
+        w[k-1] = ~y[k-1]
+
+        y = y[::-1]
+
+        def and_op(x, y, z=None):
+            return x & y
+
+        z = floatingpoint.PreOpL(and_op, y)[::-1]
+        #z = floatingpoint.PreOpL2(and_op, y)[::-1]
+
+        for i in range(k-1,0,-1): # no optimizing
+            w[i-1] = z[i-1] ^ z[i]
+
+        out = [sbit() for i in range(k)]
+        for i in range(k):
+            out[i] = R_bits[i] & w[i]
+
+        total = out[0]
+        for i in range(1, k):
+            total = total ^ out[i]
+
+        return total
+
+    def customLTZDragos(self, s, a):
+        """
+        s = (a ?< 0)
+
+        k: bit length of a
+        """
+
+        from .GC.types import sbit, cbits
+        BIT_SIZE = 64
+        length_eda = BIT_SIZE
+
+        M = 18446744073709551557
+        R = (M - 1) // 2
+        r, r_bits = sint.get_edabit(length_eda, True)
+        masked_a = (a + r).reveal()
+        masked_b = masked_a + M - R
+
+        w = [None, None, None, None]
+
+        w[1] = self.RabbitLTDragos(masked_a, r_bits, BIT_SIZE)
+        w[2] = self.RabbitLTDragos(masked_b, r_bits, BIT_SIZE)
+
+        w[3] = cint(masked_b > 0)
+        w3_bits = cbits.bit_decompose_clear(w[3], 64)
+
+        movs(s, sint.conv(w[1] ^ w[2] ^ w3_bits[0]))
+
+    def rabbit(self, a):
+        res = sint()
+        self.customLTZDragos(res, a)
+        return res
 
     def ltz(self, a, k):
         prog = program.Program.prog
         if prog.options.comparison_rabbit:
-            return self.rabbitLTZField(a)
+            #return self.rabbitLTZField(a)
+            return self.rabbit(a)
         
         # else, use truncation
         return -self.trunc(a, k, k - 1, True)
